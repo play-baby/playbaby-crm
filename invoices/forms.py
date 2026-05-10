@@ -34,7 +34,9 @@ class InvoiceForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self._user = user
         self.fields['status'].queryset = InvoiceStatus.objects.exclude(name='ملغي')
-        if not kwargs.get('data') and not kwargs.get('instance'):
+        if self.instance and self.instance.pk:
+            self.fields['invoice_number'].disabled = True
+        elif not kwargs.get('data'):
             self.fields['invoice_number'].initial = Invoice.generate_invoice_number()
         if user and is_shipping(user):
             for fname in ['invoice_number', 'customer', 'date', 'notes']:
