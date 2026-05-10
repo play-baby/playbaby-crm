@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.cache import cache
+from django.contrib.auth.models import Group
 
 class SiteSetting(models.Model):
     logo = models.ImageField('شعار الموقع', upload_to='logo/', blank=True, null=True)
@@ -26,6 +27,21 @@ class SiteSetting(models.Model):
 
     def __str__(self):
         return 'إعدادات الموقع'
+
+
+class RoleLanding(models.Model):
+    group = models.OneToOneField(Group, on_delete=models.CASCADE, verbose_name='المجموعة')
+    landing_page = models.CharField('صفحة الهبوط', max_length=100, blank=True,
+                                     help_text='اسم مسار URL (مثال: customer_list)')
+    dashboard_blocked = models.BooleanField('حظر لوحة التحكم', default=False,
+                                             help_text='عند التفعيل، يتم توجيه المستخدم بعيداً عن لوحة التحكم')
+
+    class Meta:
+        verbose_name = 'إعدادات المجموعة'
+        verbose_name_plural = 'إعدادات المجموعات'
+
+    def __str__(self):
+        return f'{self.group.name}: {self.landing_page or "الافتراضية"}'
 
 
 class InvoiceTemplate(models.Model):
