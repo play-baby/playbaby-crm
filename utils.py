@@ -44,7 +44,6 @@ def export_xlsx(model_class, fields, filename):
 XLSX_MAGIC = b'\x50\x4B\x03\x04'
 
 ALLOWED_EXTENSIONS = {'.csv', '.xlsx'}
-CSV_MAGIC = b'\xef\xbb\xbf'
 
 def _validate_file_upload(file, max_size_mb=5):
     """Validate uploaded file: extension, size, and basic content check."""
