@@ -52,7 +52,7 @@
       .breadcrumb { font-size: 0.75rem; }
       .main-sidebar { width: 220px; }
       .nav-sidebar .nav-link p { font-size: 0.7rem; }
-      .nav-sidebar .nav-link { padding: 0.6rem 0.3rem !important; margin: 1px 6px; }
+      .nav-sidebar .nav-link { padding: 0.6rem 0.8rem !important; margin: 1px 0; }
       .card-body { padding: 0.9rem; }
       .content { padding: 0 0.3rem !important; }
       .container-fluid { padding-right: 10px !important; padding-left: 10px !important; }
@@ -141,23 +141,26 @@
       align-items: center !important;
       justify-content: center !important;
       flex-direction: row;
-      padding: 0.6rem 0.5rem 0.6rem 0.8rem !important;
-      margin: 2px 8px;
-      border-radius: 14px;
+      padding: 0.6rem 1rem !important;
+      margin: 1px 0;
+      border-radius: 0;
       gap: 10px;
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
+      border-right: 3px solid transparent;
     }
     .nav-sidebar .nav-link:hover {
       background: rgba(220,20,60,0.08) !important;
-      transform: translateX(-3px);
+      border-right-color: var(--pb-red);
     }
     .nav-sidebar .nav-link.active {
       background: linear-gradient(135deg, rgba(220,20,60,0.2), rgba(255,23,68,0.05)) !important;
-      border: 1px solid rgba(220,20,60,0.15);
-      box-shadow: 0 4px 20px rgba(220,20,60,0.08);
+      border-right: 3px solid var(--pb-red);
+      box-shadow: inset 0 0 20px rgba(220,20,60,0.05);
     }
+    .nav-sidebar .nav-link p { flex: 1; text-align: right; }
+    .nav-sidebar .nav-link .nav-icon { margin-left: 0; }
     /* ── Sidebar Icons (no container, just icon) ── */
     .nav-sidebar .nav-link .nav-icon {
       font-size: 1.1rem;
@@ -200,23 +203,28 @@
     /* Treeview fixes */
     .nav-sidebar .nav-treeview {
       background: rgba(0,0,0,0.2);
-      border-radius: 12px;
-      margin: 2px 8px;
+      margin: 0;
       padding: 4px 0;
     }
     .nav-sidebar .nav-treeview .nav-link {
-      padding: 0.45rem 0.8rem !important;
-      margin: 1px 4px;
-      border-radius: 8px;
+      padding: 0.45rem 1rem !important;
+      margin: 0;
+      border-radius: 0;
       flex-direction: row;
       gap: 10px;
-      justify-content: flex-start !important;
+      justify-content: center !important;
+      border-right: 3px solid transparent;
     }
-    .nav-sidebar .nav-treeview .nav-link { gap: 10px; padding: 0.45rem 0.7rem !important; }
+    .nav-sidebar .nav-treeview .nav-link:hover { border-right-color: var(--pb-red); }
+    .nav-sidebar .nav-treeview .nav-link.active {
+      border-right: 3px solid var(--pb-red);
+      background: rgba(220,20,60,0.15) !important;
+    }
     .nav-sidebar .nav-treeview .nav-link .nav-icon { font-size: 0.85rem; width: 22px !important; }
     .nav-sidebar .nav-treeview .nav-link p {
       font-size: 0.72rem;
       text-align: right;
+      flex: 1;
     }
     .nav-sidebar .nav-link .fa-angle-left {
       margin-right: auto !important;
