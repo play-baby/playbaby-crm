@@ -327,6 +327,12 @@
           <td colspan="5">المجموع الفرعي</td>
           <td>{{ invoice.subtotal|floatformat:2 }} ج.م</td>
         </tr>
+        {% if invoice.item_discount_amount %}
+        <tr>
+          <td colspan="5">خصم على العناصر</td>
+          <td>-{{ invoice.item_discount_amount|floatformat:2 }} ج.م</td>
+        </tr>
+        {% endif %}
         {% if invoice.discount_percent %}
         <tr>
           <td colspan="5">خصم على الفاتورة ({{ invoice.discount_percent|floatformat:2 }}%)</td>

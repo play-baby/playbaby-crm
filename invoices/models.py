@@ -85,6 +85,10 @@ class Invoice(models.Model):
         return self.items_net_total * (1 - (self.discount_percent or 0) / 100)
 
     @property
+    def item_discount_amount(self):
+        return self.subtotal - self.items_net_total
+
+    @property
     def invoice_discount_amount(self):
         return self.items_net_total * ((self.discount_percent or 0) / 100)
 
