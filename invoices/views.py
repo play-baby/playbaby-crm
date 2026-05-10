@@ -10,6 +10,7 @@ from django.http import JsonResponse
 from django.utils.timezone import now
 from decimal import Decimal
 from django.db.models import Sum, Q
+from django.db.utils import OperationalError
 from .models import Invoice, InvoiceItem, InvoiceStatus, InvoiceStatusLog, PaymentMethod, Notification, Payment
 from .forms import InvoiceForm, InvoiceItemFormSet, InvoiceStatusForm, PaymentMethodForm, InvoiceTemplateForm, PaymentForm
 from core.models import InvoiceTemplate
@@ -247,8 +248,11 @@ class InvoiceDetailView(LoginRequiredMixin, DetailView):
             revised_items_total += line_net
         inv_dp = invoice.discount_percent or Decimal('0')
         ctx['revised_total_preview'] = revised_items_total * (Decimal('1') - inv_dp / Decimal('100'))
-        # Payments
-        ctx['payments'] = invoice.payments.select_related('created_by', 'payment_method').all()
+        # Payments (safety: table may not exist if migration hasn't been applied)
+        try:
+            ctx['payments'] = invoice.payments.select_related('created_by', 'payment_method').all()
+        except OperationalError:
+            ctx['payments'] = []
         ctx['payment_form'] = PaymentForm()
         return ctx
 
