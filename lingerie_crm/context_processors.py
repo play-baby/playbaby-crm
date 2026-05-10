@@ -1,5 +1,6 @@
 from datetime import datetime
 from django.db.models import Q
+from django.db.utils import OperationalError
 from core.models import SiteSetting, InvoiceTemplate
 from invoices.models import Notification
 from lingerie_crm.roles import is_owner, is_sales, is_shipping
@@ -10,7 +11,10 @@ def site_settings(request):
     user = request.user
     unread_count = 0
     if user.is_authenticated:
-        unread_count = Notification.objects.filter(recipient=user, is_read=False).count()
+        try:
+            unread_count = Notification.objects.filter(recipient=user, is_read=False).count()
+        except OperationalError:
+            unread_count = 0
     return {
         'site_name': 'Play Baby Lingerie',
         'site_short_name': 'Play Baby CRM',
