@@ -84,7 +84,7 @@ class InvoiceCreateView(SalesRequiredMixin, CreateView):
         ctx['status_checkboxes'] = checkboxes
         return ctx
 
-    def _process_status_checkboxes(self, form):
+    def _apply_status_checkboxes(self):
         status_ids = self.request.POST.getlist('status_check')
         if not status_ids:
             return
@@ -100,16 +100,18 @@ class InvoiceCreateView(SalesRequiredMixin, CreateView):
                     if not highest_new or s.order > highest_new.order:
                         highest_new = s
         if highest_new:
-            form.cleaned_data['status'] = highest_new
+            self.object.status = highest_new
+            self.object._changed_by = self.request.user
+            self.object.save(update_fields=['status'])
 
     def form_valid(self, form):
         ctx = self.get_context_data()
         formset = ctx['item_formset']
         if formset.is_valid():
-            self._process_status_checkboxes(form)
             self.object = form.save()
             self.object.created_by = self.request.user
             self.object.save(update_fields=['created_by'])
+            self._apply_status_checkboxes()
             formset.instance = self.object
             formset.save()
             self.object.recalculate_total()
@@ -157,10 +159,10 @@ class InvoiceUpdateView(LoginRequiredMixin, UpdateView):
         ctx['status_checkboxes'] = checkboxes
         return ctx
 
-    def _process_status_checkboxes(self, form):
+    def _apply_status_checkboxes(self):
         status_ids = self.request.POST.getlist('status_check')
         if not status_ids:
-            return
+            return None
         user = self.request.user
         user_group_names = set(user.groups.values_list('name', flat=True))
         is_owner_user = is_owner(user)
@@ -174,26 +176,29 @@ class InvoiceUpdateView(LoginRequiredMixin, UpdateView):
                     if not highest_new or s.order > highest_new.order:
                         highest_new = s
         if highest_new:
-            form.cleaned_data['status'] = highest_new
+            self.object.status = highest_new
+            self.object._changed_by = user
+            self.object.save(update_fields=['status'])
+        return highest_new
 
     def form_valid(self, form):
         user = self.request.user
         form.instance._changed_by = user
         if is_shipping(user) and not (is_sales(user) or is_owner(user)):
-            self._process_status_checkboxes(form)
             form.instance.invoice_number = Invoice.objects.get(pk=self.object.pk).invoice_number
             form.instance.customer = Invoice.objects.get(pk=self.object.pk).customer
             form.instance.date = Invoice.objects.get(pk=self.object.pk).date
             form.instance.total_amount = Invoice.objects.get(pk=self.object.pk).total_amount
             form.instance.notes = Invoice.objects.get(pk=self.object.pk).notes
             self.object = form.save()
-            messages.success(self.request, f'تم تحديث حالة الفاتورة {self.object.invoice_number} بنجاح')
+            self._apply_status_checkboxes()
+            messages.success(self.request, f'تم تعديل الفاتورة {self.object.invoice_number} بنجاح')
             return redirect(self.success_url)
         ctx = self.get_context_data()
         formset = ctx['item_formset']
         if formset.is_valid():
-            self._process_status_checkboxes(form)
             self.object = form.save()
+            self._apply_status_checkboxes()
             formset.instance = self.object
             formset.save()
             self.object.recalculate_total()
