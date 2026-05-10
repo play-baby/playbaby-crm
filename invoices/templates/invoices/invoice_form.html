@@ -64,9 +64,10 @@
               <th style="width:5%;" class="d-none d-sm-table-cell">#</th>
               <th style="width:22%;">المنتج</th>
               <th style="width:18%;" class="d-none d-md-table-cell">اسم المنتج</th>
-              <th style="width:12%;">الكمية</th>
-              <th style="width:15%;" class="d-none d-sm-table-cell">سعر الوحدة</th>
-              <th style="width:12%;">الإجمالي</th>
+              <th style="width:10%;">الكمية</th>
+              <th style="width:12%;" class="d-none d-sm-table-cell">سعر الوحدة</th>
+              <th style="width:8%;">خصم %</th>
+              <th style="width:12%;">الصافي</th>
               <th style="width:5%;"></th>
             </tr>
           </thead>
@@ -92,6 +93,10 @@
                 {% if f.unit_price.errors %}<small class="text-danger d-block">{{ f.unit_price.errors.0 }}</small>{% endif %}
               </td>
               <td>
+                {{ f.discount_percent }}
+                {% if f.discount_percent.errors %}<small class="text-danger d-block">{{ f.discount_percent.errors.0 }}</small>{% endif %}
+              </td>
+              <td>
                 {{ f.total }}
               </td>
               <td class="text-center">
@@ -111,6 +116,16 @@
                 </button>
               </td>
             </tr>
+            <tr>
+              <td colspan="5" class="text-left">المجموع الفرعي</td>
+              <td id="subtotalDisplay">0.00 ج.م</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td colspan="5" class="text-left">خصم على الفاتورة</td>
+              <td id="invoiceDiscountDisplay">0 %</td>
+              <td></td>
+            </tr>
             <tr class="font-weight-bold" style="font-size:1.2rem;">
               <td colspan="5" class="text-left">الإجمالي الكلي</td>
               <td id="grandTotal">0.00 ج.م</td>
@@ -123,7 +138,13 @@
       {% endif %}
 
       <div class="row mt-3">
-        <div class="col-6 col-md-4">
+        <div class="col-4 col-md-3">
+          <div class="form-group">
+            <label>{{ form.discount_percent.label }}</label>
+            {{ form.discount_percent }}
+          </div>
+        </div>
+        <div class="col-4 col-md-3">
           <div class="form-group">
             <label>{{ form.paid_amount.label }}</label>
             {{ form.paid_amount }}
@@ -195,17 +216,28 @@ function calcRow(el) {
     qty = maxQty;
   }
   var price = parseFloat(row.find('.item-price').val()) || 0;
+  var discount = parseFloat(row.find('.item-discount').val()) || 0;
   var total = qty * price;
-  row.find('.item-total').val(total.toFixed(2));
+  var net = total * (1 - discount / 100);
+  row.find('.item-total').val(net.toFixed(2));
   calcGrandTotal();
 }
 
+function getInvoiceDiscount() {
+  return parseFloat($('#id_discount_percent').val()) || 0;
+}
+
 function calcGrandTotal() {
-  var gt = 0;
+  var subtotal = 0;
   $('.item-total').each(function() {
-    gt += parseFloat($(this).val()) || 0;
+    subtotal += parseFloat($(this).val()) || 0;
   });
-  $('#grandTotal').text(gt.toFixed(2) + ' ج.م');
+  var invDiscount = getInvoiceDiscount();
+  var invDiscountVal = subtotal * (invDiscount / 100);
+  var grandTotal = subtotal - invDiscountVal;
+  $('#subtotalDisplay').text(subtotal.toFixed(2) + ' ج.م');
+  $('#invoiceDiscountDisplay').text(invDiscount.toFixed(2) + ' %');
+  $('#grandTotal').text(grandTotal.toFixed(2) + ' ج.م');
 }
 
 $(document).ready(function() {
@@ -233,6 +265,7 @@ $(document).ready(function() {
     template.find('.product-name').val('');
     template.find('.item-qty').val(1);
     template.find('.item-price').val('0.00');
+    template.find('.item-discount').val('0');
     template.find('.item-total').val('0.00');
     template.find('.errorlist').remove();
     template.find('small.text-danger').remove();
@@ -257,7 +290,8 @@ $(document).ready(function() {
   });
 
   $(document).on('change', '.product-select', function() { onProductChange(this); });
-  $(document).on('input', '.item-qty, .item-price', function() { calcRow(this); });
+  $(document).on('input', '.item-qty, .item-price, .item-discount', function() { calcRow(this); });
+  $(document).on('input', '#id_discount_percent', function() { calcGrandTotal(); });
 });
 </script>
 {% endblock %}

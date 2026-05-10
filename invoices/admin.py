@@ -11,4 +11,4 @@ class InvoiceItemInline(admin.TabularInline):
 @admin.register(Invoice)
 class InvoiceAdmin(admin.ModelAdmin):
     inlines = [InvoiceItemInline]
-    list_display = ['invoice_number', 'customer', 'date', 'total_amount', 'status', 'payment_method']
+    list_display = ['invoice_number', 'customer', 'date', 'total_amount', 'discount_percent', 'status', 'payment_method']

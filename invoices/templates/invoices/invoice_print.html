@@ -181,7 +181,8 @@
           <th>المنتج</th>
           <th>الكمية</th>
           <th>سعر الوحدة</th>
-          <th>الإجمالي</th>
+          <th>الخصم %</th>
+          <th>الصافي</th>
         </tr>
       </thead>
       <tbody>
@@ -191,24 +192,35 @@
           <td>{{ item.product_name }}</td>
           <td>{{ item.quantity }}</td>
           <td>{{ item.unit_price }} ج.م</td>
-          <td>{{ item.total }} ج.م</td>
+          <td>{{ item.discount_percent|floatformat:2 }}%</td>
+          <td>{{ item.line_net|floatformat:2 }} ج.م</td>
         </tr>
         {% empty %}
-        <tr><td colspan="5">لا توجد عناصر</td></tr>
+        <tr><td colspan="6">لا توجد عناصر</td></tr>
         {% endfor %}
       </tbody>
       <tfoot>
+        <tr>
+          <td colspan="5">المجموع الفرعي</td>
+          <td>{{ invoice.subtotal|floatformat:2 }} ج.م</td>
+        </tr>
+        {% if invoice.discount_percent %}
+        <tr>
+          <td colspan="5">خصم على الفاتورة ({{ invoice.discount_percent|floatformat:2 }}%)</td>
+          <td>-{{ invoice.invoice_discount_amount|floatformat:2 }} ج.م</td>
+        </tr>
+        {% endif %}
         <tr class="inv-total-row">
-          <td colspan="4">الإجمالي الكلي</td>
-          <td>{{ invoice.total_amount }} ج.م</td>
+          <td colspan="5">الإجمالي الكلي</td>
+          <td>{{ invoice.total_amount|floatformat:2 }} ج.م</td>
         </tr>
         <tr>
-          <td colspan="4">المدفوع</td>
+          <td colspan="5">المدفوع</td>
           <td>{{ invoice.paid_amount }} ج.م</td>
         </tr>
         <tr>
-          <td colspan="4">المتبقي</td>
-          <td>{{ invoice.remaining_amount }} ج.م</td>
+          <td colspan="5">المتبقي</td>
+          <td>{{ invoice.remaining_amount|floatformat:2 }} ج.م</td>
         </tr>
       </tfoot>
     </table>

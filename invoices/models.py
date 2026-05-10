@@ -39,6 +39,7 @@ class Invoice(models.Model):
     date = models.DateField('التاريخ')
     total_amount = models.DecimalField('الإجمالي', max_digits=12, decimal_places=2, default=0)
     paid_amount = models.DecimalField('المدفوع', max_digits=12, decimal_places=2, default=0)
+    discount_percent = models.DecimalField('خصم على الفاتورة %', max_digits=5, decimal_places=2, default=0)
     status = models.ForeignKey(InvoiceStatus, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='حالة الطلب')
     payment_method = models.ForeignKey(PaymentMethod, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='طريقة الدفع')
     notes = models.TextField('ملاحظات', blank=True, null=True)
@@ -71,9 +72,24 @@ class Invoice(models.Model):
     def remaining_amount(self):
         return self.total_amount - self.paid_amount
 
+    @property
+    def subtotal(self):
+        return self.items.aggregate(models.Sum('total'))['total__sum'] or 0
+
+    @property
+    def items_net_total(self):
+        return sum(item.line_net for item in self.items.all())
+
+    @property
+    def net_total(self):
+        return self.items_net_total * (1 - (self.discount_percent or 0) / 100)
+
+    @property
+    def invoice_discount_amount(self):
+        return self.items_net_total * ((self.discount_percent or 0) / 100)
+
     def recalculate_total(self):
-        total = self.items.aggregate(models.Sum('total'))['total__sum'] or 0
-        self.total_amount = total
+        self.total_amount = self.net_total
         self.save(update_fields=['total_amount'])
 
     @staticmethod
@@ -96,6 +112,7 @@ class InvoiceItem(models.Model):
     quantity = models.IntegerField('الكمية', default=1)
     unit_price = models.DecimalField('سعر الوحدة', max_digits=10, decimal_places=2)
     total = models.DecimalField('الإجمالي', max_digits=10, decimal_places=2)
+    discount_percent = models.DecimalField('خصم %', max_digits=5, decimal_places=2, default=0)
 
     class Meta:
         verbose_name = 'عنصر فاتورة'
@@ -107,6 +124,10 @@ class InvoiceItem(models.Model):
     def save(self, *args, **kwargs):
         self.total = self.quantity * self.unit_price
         super().save(*args, **kwargs)
+
+    @property
+    def line_net(self):
+        return self.total * (1 - (self.discount_percent or 0) / 100)
 
 
 @receiver(post_save, sender=Invoice)

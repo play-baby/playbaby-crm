@@ -7,7 +7,7 @@ from lingerie_crm.roles import is_shipping
 class InvoiceForm(forms.ModelForm):
     class Meta:
         model = Invoice
-        fields = ['invoice_number', 'customer', 'date', 'status', 'payment_method', 'paid_amount', 'notes']
+        fields = ['invoice_number', 'customer', 'date', 'status', 'payment_method', 'paid_amount', 'discount_percent', 'notes']
         widgets = {
             'invoice_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'مثال: INV-001'}),
             'customer': forms.Select(attrs={'class': 'form-control'}),
@@ -15,6 +15,7 @@ class InvoiceForm(forms.ModelForm):
             'status': forms.Select(attrs={'class': 'form-control'}),
             'payment_method': forms.Select(attrs={'class': 'form-control'}),
             'paid_amount': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0.00'}),
+            'discount_percent': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0', 'min': '0', 'max': '100', 'step': '0.01'}),
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'ملاحظات...'}),
         }
         labels = {
@@ -24,6 +25,7 @@ class InvoiceForm(forms.ModelForm):
             'status': 'حالة الطلب',
             'payment_method': 'طريقة الدفع',
             'paid_amount': 'المدفوع',
+            'discount_percent': 'خصم %',
             'notes': 'ملاحظات',
         }
 
@@ -88,7 +90,7 @@ class PaymentMethodForm(forms.ModelForm):
 class InvoiceItemForm(forms.ModelForm):
     class Meta:
         model = InvoiceItem
-        fields = ['product', 'product_name', 'quantity', 'unit_price', 'total']
+        fields = ['product', 'product_name', 'quantity', 'unit_price', 'discount_percent', 'total']
         widgets = {
             'product': forms.Select(attrs={
                 'class': 'form-control product-select',
@@ -108,6 +110,14 @@ class InvoiceItemForm(forms.ModelForm):
                 'class': 'form-control item-price',
                 'placeholder': '0.00',
                 'min': '0',
+                'step': '0.01',
+                'oninput': 'calcRow(this)',
+            }),
+            'discount_percent': forms.NumberInput(attrs={
+                'class': 'form-control item-discount',
+                'placeholder': '0',
+                'min': '0',
+                'max': '100',
                 'step': '0.01',
                 'oninput': 'calcRow(this)',
             }),
