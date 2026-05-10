@@ -4,6 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from . import views
+from deploy_view import run_deploy
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -14,6 +15,7 @@ urlpatterns = [
     path('products/', include('products.urls')),
     path('invoices/', include('invoices.urls')),
     path('reports/', include('reports.urls')),
+    path('deploy/', run_deploy, name='run_deploy'),
 ]
 
 if settings.DEBUG:
