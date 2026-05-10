@@ -1,23 +1,102 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from datetime import timedelta
+import calendar
 from customers.models import Customer
 from products.models import Product
 from invoices.models import Invoice, InvoiceItem
-from django.db.models import Sum, F, ExpressionWrapper, DecimalField
+from django.db.models import Sum, F, ExpressionWrapper, DecimalField, Count
 from lingerie_crm.roles import is_owner
 
 @login_required
 def dashboard(request):
     is_owner_user = is_owner(request.user)
+    today = timezone.now().date()
+    first_of_month = today.replace(day=1)
 
+    # â”€â”€ Overview Counts â”€â”€
     customers_count = Customer.objects.count()
     products_count = Product.objects.count()
     invoices_count = Invoice.objects.count()
     total_revenue = Invoice.objects.aggregate(total=Sum('total_amount'))['total'] or 0
     total_paid = Invoice.objects.aggregate(total=Sum('paid_amount'))['total'] or 0
     low_stock = Product.objects.filter(quantity__lt=10).count()
-    latest_customers = Customer.objects.order_by('-created_at')[:5]
-    latest_invoices = Invoice.objects.order_by('-created_at')[:5]
+    out_of_stock = Product.objects.filter(quantity=0).count()
+
+    # â”€â”€ Today / Week / Month KPIs â”€â”€
+    today_invoices = Invoice.objects.filter(date=today)
+    today_revenue = today_invoices.aggregate(t=Sum('total_amount'))['t'] or 0
+    today_count = today_invoices.count()
+
+    week_start = today - timedelta(days=today.weekday())
+    week_invoices = Invoice.objects.filter(date__gte=week_start)
+    week_revenue = week_invoices.aggregate(t=Sum('total_amount'))['t'] or 0
+    week_count = week_invoices.count()
+
+    month_invoices = Invoice.objects.filter(date__gte=first_of_month)
+    month_revenue = month_invoices.aggregate(t=Sum('total_amount'))['t'] or 0
+
+    # â”€â”€ Monthly Revenue (last 6 months) â”€â”€
+    months_data = []
+    for i in range(5, -1, -1):
+        m = today.month - i
+        y = today.year
+        while m < 1:
+            m += 12
+            y -= 1
+        month_total = Invoice.objects.filter(
+            date__year=y, date__month=m
+        ).aggregate(t=Sum('total_amount'))['t'] or 0
+        month_paid = Invoice.objects.filter(
+            date__year=y, date__month=m
+        ).aggregate(t=Sum('paid_amount'))['t'] or 0
+        months_data.append({
+            'label': calendar.month_name[m][:3],
+            'revenue': float(month_total),
+            'paid': float(month_paid),
+        })
+
+    monthly_labels = [m['label'] for m in months_data]
+    monthly_revenue = [m['revenue'] for m in months_data]
+    monthly_paid = [m['paid'] for m in months_data]
+
+    # â”€â”€ Top 5 Products â”€â”€
+    top_products = (
+        InvoiceItem.objects.values('product_name')
+        .annotate(total_qty=Sum('quantity'), total_rev=Sum('total'))
+        .order_by('-total_qty')[:5]
+    )
+
+    # â”€â”€ Top 5 Customers â”€â”€
+    top_customers = Customer.objects.filter(total_amount__gt=0).order_by('-total_amount')[:5]
+
+    # â”€â”€ Payment Method Distribution â”€â”€
+    payment_dist = (
+        Invoice.objects.filter(payment_method__isnull=False)
+        .values('payment_method__name')
+        .annotate(total=Sum('total_amount'))
+        .order_by('-total')
+    )
+    payment_labels = [p['payment_method__name'] for p in payment_dist]
+    payment_values = [float(p['total']) for p in payment_dist]
+
+    # â”€â”€ Invoice Status Distribution â”€â”€
+    status_dist = (
+        Invoice.objects.filter(status__isnull=False)
+        .values('status__name', 'status__color')
+        .annotate(count=Count('id'))
+        .order_by('-count')
+    )
+    status_labels = [s['status__name'] for s in status_dist]
+    status_counts = [s['count'] for s in status_dist]
+    status_colors = [s['status__color'] for s in status_dist]
+
+    # â”€â”€ Latest Activity â”€â”€
+    recent_invoices = Invoice.objects.select_related('customer', 'created_by').order_by('-created_at')[:8]
+
+    # â”€â”€ Low Stock Products â”€â”€
+    low_stock_products = Product.objects.filter(quantity__lt=10).order_by('quantity')[:10]
 
     context = {
         'customers_count': customers_count,
@@ -27,9 +106,27 @@ def dashboard(request):
         'total_paid': total_paid,
         'outstanding': total_revenue - total_paid,
         'low_stock': low_stock,
-        'latest_customers': latest_customers,
-        'latest_invoices': latest_invoices,
-        'page_title': 'لوحة التحكم',
+        'out_of_stock': out_of_stock,
+        'page_title': 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…',
+        # KPIs
+        'today_revenue': today_revenue,
+        'today_count': today_count,
+        'week_revenue': week_revenue,
+        'week_count': week_count,
+        'month_revenue': month_revenue,
+        # Charts
+        'monthly_labels': monthly_labels,
+        'monthly_revenue': monthly_revenue,
+        'monthly_paid': monthly_paid,
+        'top_products': list(top_products),
+        'top_customers': top_customers,
+        'payment_labels': payment_labels,
+        'payment_values': payment_values,
+        'status_labels': status_labels,
+        'status_counts': status_counts,
+        'status_colors': status_colors,
+        'recent_invoices': recent_invoices,
+        'low_stock_products': low_stock_products,
     }
 
     if is_owner_user:
