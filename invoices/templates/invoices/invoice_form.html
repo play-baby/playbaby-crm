@@ -83,6 +83,37 @@
         {% endif %}
       {% endif %}
 
+      {% if is_shipping and not is_sales %}
+      <!-- SHIPPING: read-only items view -->
+      <h5 class="mt-4 mb-3" style="color:#fff;font-size:0.95rem;">عناصر الفاتورة</h5>
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>المنتج</th>
+              <th>الكمية</th>
+              <th>سعر الوحدة</th>
+              <th>الإجمالي</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in form.instance.items.all %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ item.product_name }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>{{ item.unit_price }}</td>
+              <td>{{ item.total }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-muted">لا توجد عناصر</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+
       {% if not is_shipping %}
       <h5 class="mt-4 mb-3" style="color:#fff;font-size:0.95rem;">عناصر الفاتورة</h5>
       <div class="table-responsive">
@@ -202,7 +233,7 @@
       </button>
       {% endif %}
       <button type="submit" class="btn btn-success btn-sm">
-        <i class="fas fa-save ml-1"></i> {% if is_shipping %}تحديث الحالة{% else %}حفظ{% endif %}
+        <i class="fas fa-save ml-1"></i> {% if is_shipping %}تعديل{% else %}حفظ{% endif %}
       </button>
     </div>
   </form>
