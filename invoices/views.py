@@ -68,12 +68,45 @@ class InvoiceCreateView(SalesRequiredMixin, CreateView):
             ctx['item_formset'] = InvoiceItemFormSet(self.request.POST)
         else:
             ctx['item_formset'] = InvoiceItemFormSet()
+        # Status checkboxes for create (all unchecked, available based on permissions)
+        user = self.request.user
+        user_group_names = set(user.groups.values_list('name', flat=True))
+        is_owner_user = is_owner(user)
+        all_statuses = InvoiceStatus.objects.exclude(name='ملغي').order_by('order')
+        checkboxes = []
+        for s in all_statuses:
+            allowed_group_names = set(s.allowed_groups.values_list('name', flat=True))
+            user_has_perm = is_owner_user or bool(user_group_names & allowed_group_names)
+            checkboxes.append({
+                'id': s.id, 'name': s.name, 'color': s.color,
+                'checked': False, 'disabled': not user_has_perm,
+            })
+        ctx['status_checkboxes'] = checkboxes
         return ctx
+
+    def _process_status_checkboxes(self, form):
+        status_ids = self.request.POST.getlist('status_check')
+        if not status_ids:
+            return
+        user = self.request.user
+        user_group_names = set(user.groups.values_list('name', flat=True))
+        is_owner_user = is_owner(user)
+        all_statuses = InvoiceStatus.objects.exclude(name='ملغي').order_by('order')
+        highest_new = None
+        for s in all_statuses:
+            if str(s.id) in status_ids:
+                allowed_group_names = set(s.allowed_groups.values_list('name', flat=True))
+                if is_owner_user or (user_group_names & allowed_group_names):
+                    if not highest_new or s.order > highest_new.order:
+                        highest_new = s
+        if highest_new:
+            form.cleaned_data['status'] = highest_new
 
     def form_valid(self, form):
         ctx = self.get_context_data()
         formset = ctx['item_formset']
         if formset.is_valid():
+            self._process_status_checkboxes(form)
             self.object = form.save()
             self.object.created_by = self.request.user
             self.object.save(update_fields=['created_by'])
@@ -106,12 +139,48 @@ class InvoiceUpdateView(LoginRequiredMixin, UpdateView):
             ctx['item_formset'] = InvoiceItemFormSet(self.request.POST, instance=self.object)
         else:
             ctx['item_formset'] = InvoiceItemFormSet(instance=self.object)
+        # Build status checkboxes
+        user = self.request.user
+        user_group_names = set(user.groups.values_list('name', flat=True))
+        is_owner_user = is_owner(user)
+        all_statuses = InvoiceStatus.objects.exclude(name='ملغي').order_by('order')
+        current_order = self.object.status.order if self.object.status else -1
+        checkboxes = []
+        for s in all_statuses:
+            already_done = s.order <= current_order
+            allowed_group_names = set(s.allowed_groups.values_list('name', flat=True))
+            user_has_perm = is_owner_user or bool(user_group_names & allowed_group_names)
+            checkboxes.append({
+                'id': s.id, 'name': s.name, 'color': s.color,
+                'checked': already_done, 'disabled': not user_has_perm or already_done,
+            })
+        ctx['status_checkboxes'] = checkboxes
         return ctx
+
+    def _process_status_checkboxes(self, form):
+        status_ids = self.request.POST.getlist('status_check')
+        if not status_ids:
+            return
+        user = self.request.user
+        user_group_names = set(user.groups.values_list('name', flat=True))
+        is_owner_user = is_owner(user)
+        all_statuses = InvoiceStatus.objects.exclude(name='ملغي').order_by('order')
+        current_order = self.object.status.order if self.object.status else -1
+        highest_new = None
+        for s in all_statuses:
+            if str(s.id) in status_ids and s.order > current_order:
+                allowed_group_names = set(s.allowed_groups.values_list('name', flat=True))
+                if is_owner_user or (user_group_names & allowed_group_names):
+                    if not highest_new or s.order > highest_new.order:
+                        highest_new = s
+        if highest_new:
+            form.cleaned_data['status'] = highest_new
 
     def form_valid(self, form):
         user = self.request.user
         form.instance._changed_by = user
         if is_shipping(user) and not (is_sales(user) or is_owner(user)):
+            self._process_status_checkboxes(form)
             form.instance.invoice_number = Invoice.objects.get(pk=self.object.pk).invoice_number
             form.instance.customer = Invoice.objects.get(pk=self.object.pk).customer
             form.instance.date = Invoice.objects.get(pk=self.object.pk).date
@@ -123,6 +192,7 @@ class InvoiceUpdateView(LoginRequiredMixin, UpdateView):
         ctx = self.get_context_data()
         formset = ctx['item_formset']
         if formset.is_valid():
+            self._process_status_checkboxes(form)
             self.object = form.save()
             formset.instance = self.object
             formset.save()

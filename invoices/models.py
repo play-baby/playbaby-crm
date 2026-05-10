@@ -5,6 +5,7 @@ from django.db.models import F
 from django.urls import reverse
 from django.db.models.signals import pre_save, post_save, post_delete
 from django.dispatch import receiver
+from django.contrib.auth.models import Group
 from customers.models import Customer
 from products.models import Product
 
@@ -12,6 +13,7 @@ class InvoiceStatus(models.Model):
     name = models.CharField('الاسم', max_length=100)
     order = models.IntegerField('الترتيب', default=0)
     color = models.CharField('اللون', max_length=7, default='#6c757d', help_text='مثال: #28a745')
+    allowed_groups = models.ManyToManyField(Group, blank=True, verbose_name='المجموعات المسموحة')
 
     class Meta:
         verbose_name = 'حالة الطلب'

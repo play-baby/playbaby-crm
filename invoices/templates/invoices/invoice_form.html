@@ -41,18 +41,25 @@
           <p><strong>التاريخ:</strong> {{ form.instance.date|date:"Y-m-d" }}</p>
         </div>
         {% endif %}
-        <!-- Status: hidden field + read-only badge -->
+        <!-- Status: hidden field + checkboxes -->
         <div style="display:none;">{{ form.status }}</div>
-        <div class="col-4 col-md-2">
+        {% if status_checkboxes %}
+        <div class="col-12">
           <div class="form-group">
             <label>حالة الطلب</label>
-            <div>
-              {% if form.instance.status %}
-              <span class="badge" style="background:{{ form.instance.status.color }};color:#fff;padding:6px 12px;font-size:0.85rem;">{{ form.instance.status.name }}</span>
-              {% else %}<span class="text-muted">---</span>{% endif %}
+            <div class="d-flex flex-wrap" style="gap:8px;">
+              {% for cb in status_checkboxes %}
+              <label class="d-inline-flex align-items-center" style="gap:4px;margin:0;{% if not cb.disabled %}cursor:pointer;{% endif %}">
+                <input type="checkbox" name="status_check" value="{{ cb.id }}"
+                  {% if cb.checked %}checked{% endif %}
+                  {% if cb.disabled %}disabled{% endif %}>
+                <span class="badge" style="background:{{ cb.color }};color:#fff;padding:5px 12px;font-size:13px;font-weight:700;opacity:{% if cb.disabled and not cb.checked %}0.45{% else %}1{% endif %};">{{ cb.name }}</span>
+              </label>
+              {% endfor %}
             </div>
           </div>
         </div>
+        {% endif %}
         <div class="col-4 col-md-2">
           <div class="form-group">
             <label>{{ form.payment_method.label }}</label>

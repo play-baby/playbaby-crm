@@ -76,17 +76,27 @@ class InvoiceForm(forms.ModelForm):
 class InvoiceStatusForm(forms.ModelForm):
     class Meta:
         model = InvoiceStatus
-        fields = ['name', 'order', 'color']
+        fields = ['name', 'order', 'color', 'allowed_groups']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'مثال: قيد الانتظار'}),
             'order': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
             'color': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
+            'allowed_groups': forms.CheckboxSelectMultiple(attrs={'class': ''}),
         }
         labels = {
             'name': 'الاسم',
             'order': 'الترتيب',
             'color': 'اللون',
+            'allowed_groups': 'المجموعات المسموحة (من يمكنه تحديث هذه الحالة)',
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['allowed_groups'].label_from_instance = lambda obj: {
+            'sales': 'المبيعات',
+            'shipping': 'الشحن',
+            'owner': 'المالك',
+        }.get(obj.name, obj.name)
 
 
 class PaymentMethodForm(forms.ModelForm):
