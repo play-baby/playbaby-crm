@@ -471,6 +471,13 @@
     .btn-group { flex-wrap: wrap; }
     hr { border-color: #222; }
 
+    /* Sortable column headers */
+    .sort-link { color: #fff; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .sort-link:hover { color: var(--pb-red); }
+    .sort-link i { font-size: 0.75rem; opacity: 0.7; }
+    .sort-link:hover i { opacity: 1; }
+    th .sort-link { font-weight: 700; }
+
     /* RTL utilities */
     .float-left { float: right !important; }
     .float-sm-left { float: right !important; }
@@ -696,7 +703,7 @@
 $(document).ready(function() {
   $('.table.sortable th').each(function() {
     var th = $(this);
-    if (th.find('i.fa-sort').length === 0 && !th.hasClass('no-sort')) {
+    if (th.find('i.fa-sort').length === 0 && !th.hasClass('no-sort') && th.find('.sort-link').length === 0) {
       th.css('cursor', 'pointer').append(' <i class="fas fa-sort" style="font-size:0.7rem;opacity:0.4;transition:0.2s"></i>');
       th.on('click', function() {
         var table = $(this).closest('table.sortable');
