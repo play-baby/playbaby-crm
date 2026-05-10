@@ -465,8 +465,27 @@
   </div>
   {% endif %}
 
+  <!-- STATUS LOG (preview only, not printed) -->
+  {% if status_logs %}
+  <div class="inv-notes no-print">
+    <strong>سجل التحديثات:</strong>
+    <div style="margin-top:6px;font-size:12px;">
+    {% for log in status_logs %}
+      <div style="padding:2px 0;border-bottom:1px solid #f0f0f0;">
+        <span style="color:var(--inv-muted);">{{ log.changed_at|date:"Y-m-d H:i" }}</span>
+        {% if log.changed_by %}<strong>{{ log.changed_by.username }}</strong>{% else %}<strong>النظام</strong>{% endif %}
+        : {{ log.from_status.name|default:"---" }} <i class="fas fa-arrow-left" style="font-size:10px;"></i> {{ log.to_status.name|default:"---" }}
+      </div>
+    {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
   <!-- FOOTER -->
   <div class="inv-footer">
+    {% if invoice.is_cancelled %}
+    <p style="color:#dc3545;font-weight:700;margin:0 0 6px;"><i class="fas fa-times-circle ml-1"></i> ملغي — {{ invoice.cancelled_at|date:"Y-m-d H:i" }} — {{ invoice.cancel_reason }}</p>
+    {% endif %}
     <p>شكراً لتسوقكم معنا</p>
     <p>{{ site_name }} &copy; {{ current_year }}</p>
     {% if site_website %}<p style="font-size:11px;color:var(--inv-muted);margin-top:4px;">{{ site_website }}</p>{% endif %}
