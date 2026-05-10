@@ -155,7 +155,7 @@
       border: 1px solid rgba(220,20,60,0.15);
       box-shadow: 0 4px 20px rgba(220,20,60,0.08);
     }
-    /* â”€â”€ Sidebar Icons (no container, just icon) â”€â”€ */
+    /* ── Sidebar Icons (no container, just icon) ── */
     .nav-sidebar .nav-link .nav-icon {
       font-size: 1.1rem;
       width: 26px !important;
@@ -409,7 +409,7 @@
       color: rgba(255,255,255,0.5);
     }
     .custom-file-label::after {
-      content: "ØªØµÙØ­";
+      content: "تصفح";
       background: var(--pb-red);
       color: #fff;
       right: auto;
@@ -485,22 +485,22 @@
         <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
       </li>
       <li class="nav-item d-sm-none">
-        <a href="{% url 'home' %}" class="nav-link" title="Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©">
+        <a href="{% url 'home' %}" class="nav-link" title="الرئيسية">
           <i class="fas fa-chart-pie nav-mobile-icon"></i>
         </a>
       </li>
       <li class="nav-item d-sm-none">
-        <a href="{% url 'customer_list' %}" class="nav-link" title="Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡">
+        <a href="{% url 'customer_list' %}" class="nav-link" title="العملاء">
           <i class="fas fa-users nav-mobile-icon"></i>
         </a>
       </li>
       <li class="nav-item d-sm-none">
-        <a href="{% url 'product_list' %}" class="nav-link" title="Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª">
+        <a href="{% url 'product_list' %}" class="nav-link" title="المنتجات">
           <i class="fas fa-box nav-mobile-icon"></i>
         </a>
       </li>
       <li class="nav-item d-sm-none">
-        <a href="{% url 'invoice_list' %}" class="nav-link" title="Ø§Ù„ÙÙˆØ§ØªÙŠØ±">
+        <a href="{% url 'invoice_list' %}" class="nav-link" title="الفواتير">
           <i class="fas fa-file-invoice nav-mobile-icon"></i>
         </a>
       </li>
@@ -509,25 +509,25 @@
       <li class="nav-item d-none d-sm-inline-block">
         <a href="{% url 'home' %}" class="nav-link {% if request.path == '/' %}active-nav{% endif %}">
           <i class="fas fa-chart-pie ml-1"></i>
-          <span class="nav-item-text">Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©</span>
+          <span class="nav-item-text">الرئيسية</span>
         </a>
       </li>
       <li class="nav-item d-none d-sm-inline-block">
         <a href="{% url 'customer_list' %}" class="nav-link {% if request.resolver_match.app_name == 'customers' %}active-nav{% endif %}">
           <i class="fas fa-users ml-1"></i>
-          <span class="nav-item-text">Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡</span>
+          <span class="nav-item-text">العملاء</span>
         </a>
       </li>
       <li class="nav-item d-none d-sm-inline-block">
         <a href="{% url 'product_list' %}" class="nav-link {% if request.resolver_match.app_name == 'products' %}active-nav{% endif %}">
           <i class="fas fa-box ml-1"></i>
-          <span class="nav-item-text">Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª</span>
+          <span class="nav-item-text">المنتجات</span>
         </a>
       </li>
       <li class="nav-item d-none d-sm-inline-block">
         <a href="{% url 'invoice_list' %}" class="nav-link {% if request.resolver_match.app_name == 'invoices' %}active-nav{% endif %}">
           <i class="fas fa-file-invoice ml-1"></i>
-          <span class="nav-item-text">Ø§Ù„ÙÙˆØ§ØªÙŠØ±</span>
+          <span class="nav-item-text">الفواتير</span>
         </a>
       </li>
       <li class="nav-item dropdown user-menu">
@@ -540,7 +540,7 @@
           <form method="post" action="{% url 'logout' %}" style="display:inline;">
             {% csrf_token %}
             <button type="submit" class="dropdown-item" style="background:none;border:none;cursor:pointer;">
-              <i class="fas fa-sign-out-alt ml-2"></i> ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø®Ø±ÙˆØ¬
+              <i class="fas fa-sign-out-alt ml-2"></i> تسجيل الخروج
             </button>
           </form>
         </div>
@@ -559,38 +559,38 @@
     <div class="sidebar">
       <nav class="mt-2">
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
-          <li class="nav-header">Ø§Ù„Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©</li>
+          <li class="nav-header">القائمة الرئيسية</li>
           <li class="nav-item">
             <a href="{% url 'home' %}" class="nav-link {% if request.path == '/' %}active{% endif %}">
               <i class="nav-icon fas fa-chart-pie"></i>
-              <p>Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…</p>
+              <p>لوحة التحكم</p>
             </a>
           </li>
           <li class="nav-item">
             <a href="{% url 'customer_list' %}" class="nav-link {% if request.resolver_match.app_name == 'customers' %}active{% endif %}">
               <i class="nav-icon fas fa-users"></i>
-              <p>Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡</p>
+              <p>العملاء</p>
             </a>
           </li>
           <li class="nav-item">
             <a href="{% url 'product_list' %}" class="nav-link {% if request.resolver_match.app_name == 'products' %}active{% endif %}">
               <i class="nav-icon fas fa-box"></i>
-              <p>Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª</p>
+              <p>المنتجات</p>
             </a>
           </li>
           <li class="nav-item">
             <a href="{% url 'invoice_list' %}" class="nav-link {% if request.resolver_match.app_name == 'invoices' %}active{% endif %}">
               <i class="nav-icon fas fa-file-invoice"></i>
-              <p>Ø§Ù„ÙÙˆØ§ØªÙŠØ±</p>
+              <p>الفواتير</p>
             </a>
           </li>
           {% if is_owner or user.is_superuser %}
-          <li class="nav-header">Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª</li>
+          <li class="nav-header">الإعدادات</li>
           <li class="nav-item has-treeview">
             <a href="#" class="nav-link">
               <i class="nav-icon fas fa-cog"></i>
               <p>
-                Ù„ÙˆØ­Ø© Ø§Ù„Ù…Ø´Ø±Ù
+                لوحة المشرف
                 <i class="fas fa-angle-left mr-1"></i>
               </p>
             </a>
@@ -598,25 +598,25 @@
               <li class="nav-item">
                 <a href="{% url 'invoice_status_list' %}" class="nav-link">
                   <i class="nav-icon fas fa-tags"></i>
-                  <p>Ø­Ø§Ù„Ø§Øª Ø§Ù„Ø·Ù„Ø¨Ø§Øª</p>
+                  <p>حالات الطلبات</p>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="{% url 'payment_method_list' %}" class="nav-link">
                   <i class="nav-icon fas fa-credit-card"></i>
-                  <p>Ø·Ø±Ù‚ Ø§Ù„Ø¯ÙØ¹</p>
+                  <p>طرق الدفع</p>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="{% url 'invoice_template_edit' %}" class="nav-link">
                   <i class="nav-icon fas fa-paint-brush"></i>
-                  <p>ØªØµÙ…ÙŠÙ… Ø§Ù„ÙØ§ØªÙˆØ±Ø©</p>
+                  <p>تصميم الفاتورة</p>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="{% url 'admin:index' %}" class="nav-link">
                   <i class="nav-icon fas fa-shield-alt"></i>
-                  <p>Ù„ÙˆØ­Ø© Ø§Ù„Ù…Ø´Ø±Ù</p>
+                  <p>لوحة المشرف</p>
                 </a>
               </li>
             </ul>
@@ -637,7 +637,7 @@
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-left">
               {% block breadcrumb %}
-              <li class="breadcrumb-item"><a href="{% url 'home' %}">Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©</a></li>
+              <li class="breadcrumb-item"><a href="{% url 'home' %}">الرئيسية</a></li>
               {% endblock %}
             </ol>
           </div>
@@ -651,7 +651,7 @@
           {% for message in messages %}
           <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
             {{ message }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Ø¥ØºÙ„Ø§Ù‚">
+            <button type="button" class="close" data-dismiss="alert" aria-label="إغلاق">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
@@ -664,7 +664,7 @@
 
   <footer class="main-footer">
     <div class="float-left d-none d-sm-block">
-      <b>Ø§Ù„Ø¥ØµØ¯Ø§Ø±</b> 1.0
+      <b>الإصدار</b> 1.0
     </div>
     <strong>&copy; {{ current_year }} <span style="color: var(--pb-red);">{{ site_name }}</span></strong>
   </footer>
