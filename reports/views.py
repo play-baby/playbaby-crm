@@ -153,6 +153,61 @@ def status_distribution_report(request):
 
 
 @login_required
+def collection_report(request):
+    if not _owner_or_admin(request.user):
+        return render(request, 'reports/_blocked.html')
+    today = timezone.now().date()
+    year = int(request.GET.get('year', today.year))
+    all_qs = Invoice.objects.filter(is_cancelled=False)
+    collected = all_qs.filter(is_collected=True)
+    uncollected = all_qs.filter(is_collected=False)
+    total_collected_amount = collected.aggregate(t=Sum('total_amount'))['t'] or 0
+    total_collected_paid = collected.aggregate(t=Sum('paid_amount'))['t'] or 0
+    total_uncollected_amount = uncollected.aggregate(t=Sum('total_amount'))['t'] or 0
+    total_uncollected_paid = uncollected.aggregate(t=Sum('paid_amount'))['t'] or 0
+    collected_count = collected.count()
+    uncollected_count = uncollected.count()
+    months_data = []
+    for m in range(1, 13):
+        qs = collected.filter(collected_at__year=year, collected_at__month=m)
+        total = qs.aggregate(t=Sum('total_amount'))['t'] or 0
+        paid = qs.aggregate(t=Sum('paid_amount'))['t'] or 0
+        count = qs.count()
+        months_data.append({
+            'month_num': m,
+            'month_name': MONTH_NAMES_AR[m],
+            'total_amount': float(total),
+            'paid_amount': float(paid),
+            'count': count,
+        })
+    collector_data = (
+        collected.values('collected_by__username')
+        .annotate(count=Count('id'), total=Sum('total_amount'), paid=Sum('paid_amount'))
+        .order_by('-total')
+    )
+    r = total_collected_amount + total_uncollected_amount
+    collection_rate = round(total_collected_amount / r * 100, 1) if r else 0
+    return render(request, 'reports/collection.html', {
+        'page_title': 'تقرير التحصيل',
+        'months_data': months_data,
+        'months_json': json.dumps([m['month_name'] for m in months_data]),
+        'collected_amounts_json': json.dumps([m['total_amount'] for m in months_data]),
+        'collected_paid_json': json.dumps([m['paid_amount'] for m in months_data]),
+        'collected_counts_json': json.dumps([m['count'] for m in months_data]),
+        'total_collected_amount': total_collected_amount,
+        'total_collected_paid': total_collected_paid,
+        'total_uncollected_amount': total_uncollected_amount,
+        'total_uncollected_paid': total_uncollected_paid,
+        'collected_count': collected_count,
+        'uncollected_count': uncollected_count,
+        'collection_rate': collection_rate,
+        'collector_data': collector_data,
+        'selected_year': year,
+        'available_years': range(2023, today.year + 2),
+    })
+
+
+@login_required
 def shipping_performance_report(request):
     if not _owner_or_admin(request.user):
         return render(request, 'reports/_blocked.html')

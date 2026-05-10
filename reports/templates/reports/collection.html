@@ -4,7 +4,7 @@
 {% block breadcrumb %}
 <li class="breadcrumb-item"><a href="{% url 'home' %}">الرئيسية</a></li>
 <li class="breadcrumb-item"><a href="{% url 'reports:report_revenue' %}">التقارير</a></li>
-<li class="breadcrumb-item active">الإيرادات</li>
+<li class="breadcrumb-item active">التحصيل</li>
 {% endblock %}
 {% block extra_css %}
 <style>
@@ -20,12 +20,12 @@
 <div class="row mb-3">
   <div class="col-12">
     <ul class="nav report-nav">
-      <li class="nav-item"><a class="nav-link active" href="{% url 'reports:report_revenue' %}">الإيرادات</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'reports:report_revenue' %}">الإيرادات</a></li>
       <li class="nav-item"><a class="nav-link" href="{% url 'reports:report_products' %}">المنتجات</a></li>
       <li class="nav-item"><a class="nav-link" href="{% url 'reports:report_customers' %}">العملاء</a></li>
       <li class="nav-item"><a class="nav-link" href="{% url 'reports:report_status' %}">حالات الفواتير</a></li>
       <li class="nav-item"><a class="nav-link" href="{% url 'reports:report_shipping' %}">أداء الشحن</a></li>
-      <li class="nav-item"><a class="nav-link" href="{% url 'reports:report_collection' %}">التحصيل</a></li>
+      <li class="nav-item"><a class="nav-link active" href="{% url 'reports:report_collection' %}">التحصيل</a></li>
     </ul>
   </div>
 </div>
@@ -48,16 +48,20 @@
   </div>
 </div>
 <div class="row mb-3">
-  <div class="col-md-3 col-6 mb-2"><div class="card"><div class="card-body stat-box"><div class="stat-box-value text-success">{{ total_revenue|floatformat:0 }}</div><div class="stat-box-label">إجمالي الإيرادات</div></div></div></div>
-  <div class="col-md-3 col-6 mb-2"><div class="card"><div class="card-body stat-box"><div class="stat-box-value text-info">{{ total_paid|floatformat:0 }}</div><div class="stat-box-label">إجمالي المدفوعات</div></div></div></div>
-  <div class="col-md-3 col-6 mb-2"><div class="card"><div class="card-body stat-box"><div class="stat-box-value text-warning">{{ total_revenue|floatformat:0 }}</div><div class="stat-box-label">إجمالي الإيرادات (ج.م)</div></div></div></div>
-  <div class="col-md-3 col-6 mb-2"><div class="card"><div class="card-body stat-box"><div class="stat-box-value text-danger">{{ total_invoices }}</div><div class="stat-box-label">عدد الفواتير</div></div></div></div>
+  <div class="col-md-3 col-6 mb-2"><div class="card"><div class="card-body stat-box"><div class="stat-box-value text-success">{{ collected_count }}</div><div class="stat-box-label">فواتير محصلة</div></div></div></div>
+  <div class="col-md-3 col-6 mb-2"><div class="card"><div class="card-body stat-box"><div class="stat-box-value text-danger">{{ uncollected_count }}</div><div class="stat-box-label">فواتير غير محصلة</div></div></div></div>
+  <div class="col-md-3 col-6 mb-2"><div class="card"><div class="card-body stat-box"><div class="stat-box-value text-info">{{ total_collected_paid|floatformat:0 }}</div><div class="stat-box-label">المبلغ المحصل (ج.م)</div></div></div></div>
+  <div class="col-md-3 col-6 mb-2"><div class="card"><div class="card-body stat-box"><div class="stat-box-value text-warning">{{ total_uncollected_amount|floatformat:0 }}</div><div class="stat-box-label">المبلغ المتبقي للتحصيل (ج.م)</div></div></div></div>
+</div>
+<div class="row mb-3">
+  <div class="col-md-3 col-6 mb-2"><div class="card"><div class="card-body stat-box"><div class="stat-box-value text-success">{{ total_collected_amount|floatformat:0 }}</div><div class="stat-box-label">إجمالي قيمة المحصل (ج.م)</div></div></div></div>
+  <div class="col-md-3 col-6 mb-2"><div class="card"><div class="card-body stat-box"><div class="stat-box-value text-primary">{{ collection_rate }}%</div><div class="stat-box-label">نسبة التحصيل</div></div></div></div>
 </div>
 <div class="row mb-3">
   <div class="col-lg-8 mb-3 mb-lg-0">
     <div class="card">
-      <div class="card-header"><h3 class="card-title"><i class="fas fa-chart-line ml-1"></i>الإيرادات الشهرية - {{ selected_year }}</h3></div>
-      <div class="card-body"><canvas id="revenueChart"></canvas></div>
+      <div class="card-header"><h3 class="card-title"><i class="fas fa-chart-bar ml-1"></i>التحصيل الشهري - {{ selected_year }}</h3></div>
+      <div class="card-body"><canvas id="collectionChart"></canvas></div>
     </div>
   </div>
   <div class="col-lg-4">
@@ -66,14 +70,42 @@
       <div class="card-body p-0">
         <div class="table-responsive">
           <table class="table table-hover mb-0">
-            <thead><tr><th>الشهر</th><th>الإيرادات</th><th>المدفوع</th><th>عدد الفواتير</th></tr></thead>
+            <thead><tr><th>الشهر</th><th>قيمة المحصل</th><th>المدفوع</th><th>عدد الفواتير</th></tr></thead>
             <tbody>
               {% for m in months_data %}
               <tr>
                 <td>{{ m.month_name }}</td>
-                <td class="text-success">{{ m.revenue|floatformat:2 }}</td>
-                <td class="text-info">{{ m.paid|floatformat:2 }}</td>
+                <td class="text-success">{{ m.total_amount|floatformat:2 }}</td>
+                <td class="text-info">{{ m.paid_amount|floatformat:2 }}</td>
                 <td>{{ m.count }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="4" class="text-center text-muted py-4">لا توجد بيانات</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% if collector_data %}
+<div class="row mb-3">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title"><i class="fas fa-user-check ml-1"></i>التحصيل حسب المسؤول</h3></div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead><tr><th style="width:40px;">#</th><th>المسؤول</th><th>عدد الفواتير</th><th>قيمة المحصل</th><th>المبلغ المحصل فعلياً</th></tr></thead>
+            <tbody>
+              {% for c in collector_data %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ c.collected_by__username|default:"تلقائي" }}</td>
+                <td>{{ c.count }}</td>
+                <td class="text-success">{{ c.total|floatformat:2 }}</td>
+                <td class="text-info">{{ c.paid|floatformat:2 }}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -83,28 +115,29 @@
     </div>
   </div>
 </div>
+{% endif %}
 {% endblock %}
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
 Chart.defaults.color = 'rgba(255,255,255,0.5)';
 Chart.defaults.font.family = 'Tajawal, sans-serif';
-var ctx = document.getElementById('revenueChart');
+var ctx = document.getElementById('collectionChart');
 if (ctx) {
   new Chart(ctx, {
     type: 'bar',
     data: {
       labels: {{ months_json|safe }},
       datasets: [{
-        label: 'الإيرادات',
-        data: {{ revenue_json|safe }},
+        label: 'قيمة المحصل',
+        data: {{ collected_amounts_json|safe }},
         backgroundColor: 'rgba(220,20,60,0.6)',
         borderColor: '#dc143c',
         borderWidth: 1,
         borderRadius: 4,
       }, {
-        label: 'المدفوعات',
-        data: {{ paid_json|safe }},
+        label: 'المدفوع',
+        data: {{ collected_paid_json|safe }},
         backgroundColor: 'rgba(0,188,212,0.6)',
         borderColor: '#00bcd4',
         borderWidth: 1,
