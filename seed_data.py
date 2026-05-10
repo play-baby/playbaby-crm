@@ -16,8 +16,9 @@ from datetime import date, timedelta
 import random
 
 # Create admin if not exists
+ADMIN_PASSWORD = os.environ.get('DJANGO_ADMIN_PASSWORD', 'playbaby123456')
 if not User.objects.filter(username='admin').exists():
-    User.objects.create_superuser('admin', 'admin@playbaby.com', 'playbaby123456')
+    User.objects.create_superuser('admin', 'admin@playbaby.com', ADMIN_PASSWORD)
     print('✅ Admin user created')
 
 # Create categories
