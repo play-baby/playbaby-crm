@@ -13,6 +13,18 @@ from products.models import Product
 from utils import export_csv, export_xlsx, import_csv, import_xlsx
 from lingerie_crm.roles import SalesRequiredMixin, ShippingRequiredMixin, OwnerRequiredMixin, is_sales, is_owner, is_shipping
 
+SORT_MAP_INVOICE = {
+    'invoice_number': 'invoice_number',
+    'customer': 'customer__name',
+    'date': 'date',
+    'status': 'status__order',
+    'payment_method': 'payment_method__name',
+    'total_amount': 'total_amount',
+    'paid_amount': 'paid_amount',
+    'remaining': 'remaining_amount',
+    'created_by': 'created_by__username',
+}
+
 class InvoiceListView(LoginRequiredMixin, ListView):
     model = Invoice
     template_name = 'invoices/invoice_list.html'
@@ -20,15 +32,24 @@ class InvoiceListView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        qs = super().get_queryset().select_related('created_by')
+        qs = super().get_queryset().select_related('created_by', 'customer', 'status', 'payment_method')
         search = self.request.GET.get('search', '')
         if search:
             qs = qs.filter(invoice_number__icontains=search) | qs.filter(customer__name__icontains=search)
+        sort = self.request.GET.get('sort', '')
+        dir = self.request.GET.get('dir', '')
+        if sort in SORT_MAP_INVOICE:
+            field = SORT_MAP_INVOICE[sort]
+            if dir == 'desc':
+                field = '-' + field
+            qs = qs.order_by(field)
         return qs
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['search'] = self.request.GET.get('search', '')
+        ctx['sort'] = self.request.GET.get('sort', '')
+        ctx['dir'] = self.request.GET.get('dir', '')
         ctx['page_title'] = 'قائمة الفواتير'
         return ctx
 
