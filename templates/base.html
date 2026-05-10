@@ -35,7 +35,9 @@
     .sidebar-collapse .content-wrapper,
     .sidebar-collapse .main-footer,
     .sidebar-collapse .main-header { margin-right: 0 !important; }
-    .sidebar-collapse .main-sidebar { z-index: 1040; }
+    .sidebar-collapse .main-sidebar { width: 0 !important; overflow: hidden; z-index: 1040; }
+    .sidebar-collapse .brand-link { display: none !important; }
+    .sidebar-collapse .sidebar { display: none !important; }
 
     /* ===== MOBILE RESPONSIVE (TABLETS) ===== */
     @media (max-width: 991.98px) {
@@ -175,7 +177,7 @@
       color: rgba(255,255,255,0.8);
     }
     .nav-link.active p { color: #fff; }
-    .sidebar-collapse .main-sidebar { width: 4.6rem; z-index: 1040; }
+    .sidebar-collapse .main-sidebar { width: 0 !important; overflow: hidden; z-index: 1040; }
     .sidebar-collapse .nav-sidebar .nav-link {
       padding: 0.7rem 0 !important;
       flex-direction: column;
