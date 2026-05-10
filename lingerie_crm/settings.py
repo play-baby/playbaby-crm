@@ -17,7 +17,7 @@ os.environ.setdefault('LC_ALL', 'en_US.UTF-8')
 
 SECRET_KEY = os.environ.get(
     'DJANGO_SECRET_KEY',
-    'django-insecure-eh*byqoyo2^kcn^7vjieixc5=j3j4!7$edj0$-lxll&i=7xe88'
+    'django-insecure-fzMFrhlvWwyPtoHHKxgnkQzeu5pHUSZreOlYgWeg9LN+xHWUaldQX1AEOpP6eSRc8S3bSEGwxhWCNQII9/JA/w=='
 )
 
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
