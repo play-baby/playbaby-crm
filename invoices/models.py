@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.db import models
 from django.conf import settings
 from django.db.models import F
@@ -74,15 +75,22 @@ class Invoice(models.Model):
 
     @property
     def subtotal(self):
-        return self.items.aggregate(models.Sum('total'))['total__sum'] or 0
+        return self.items.aggregate(models.Sum('total'))['total__sum'] or Decimal('0')
 
     @property
     def items_net_total(self):
-        return sum(item.line_net for item in self.items.all())
+        items = self.items.all()
+        if not items:
+            return Decimal('0')
+        total = Decimal('0')
+        for item in items:
+            total += item.line_net
+        return total
 
     @property
     def net_total(self):
-        return self.items_net_total * (1 - (self.discount_percent or 0) / 100)
+        dp = self.discount_percent or Decimal('0')
+        return self.items_net_total * (Decimal('1') - dp / Decimal('100'))
 
     @property
     def item_discount_amount(self):
@@ -90,7 +98,8 @@ class Invoice(models.Model):
 
     @property
     def invoice_discount_amount(self):
-        return self.items_net_total * ((self.discount_percent or 0) / 100)
+        dp = self.discount_percent or Decimal('0')
+        return self.items_net_total * (dp / Decimal('100'))
 
     def recalculate_total(self):
         self.total_amount = self.net_total
@@ -131,7 +140,8 @@ class InvoiceItem(models.Model):
 
     @property
     def line_net(self):
-        return self.total * (1 - (self.discount_percent or 0) / 100)
+        dp = self.discount_percent or Decimal('0')
+        return self.total * (Decimal('1') - dp / Decimal('100'))
 
 
 @receiver(post_save, sender=Invoice)
