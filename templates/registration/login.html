@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„ | {{ site_name }}</title>
+  <title>تسجيل الدخول | {{ site_name }}</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
@@ -163,36 +163,36 @@
         </div>
       </div>
       <h3>Play Baby <span style="color:#ff1744;background:none;-webkit-text-fill-color:initial;">Lingerie</span></h3>
-      <p>Ù†Ø¸Ø§Ù… Ø¥Ø¯Ø§Ø±Ø© Ù…ØªÙƒØ§Ù…Ù„</p>
+      <p>نظام إدارة متكامل</p>
     </div>
     <div class="card-body">
       {% if form.errors %}
       <div class="alert alert-danger">
-        <i class="fas fa-exclamation-circle ml-2"></i> Ø§Ø³Ù… Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø£Ùˆ ÙƒÙ„Ù…Ø© Ø§Ù„Ù…Ø±ÙˆØ± ØºÙŠØ± ØµØ­ÙŠØ­Ø©
+        <i class="fas fa-exclamation-circle ml-2"></i> اسم المستخدم أو كلمة المرور غير صحيحة
       </div>
       {% endif %}
       <form method="post">
         {% csrf_token %}
         <div class="form-group">
-          <label for="id_username">Ø§Ø³Ù… Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…</label>
+          <label for="id_username">اسم المستخدم</label>
           <div class="input-group">
             <div class="input-group-prepend">
               <span class="input-group-text"><i class="fas fa-user"></i></span>
             </div>
-            <input type="text" name="username" id="id_username" class="form-control" placeholder="Ø£Ø¯Ø®Ù„ Ø§Ø³Ù… Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…" required autofocus>
+            <input type="text" name="username" id="id_username" class="form-control" placeholder="أدخل اسم المستخدم" required autofocus>
           </div>
         </div>
         <div class="form-group">
-          <label for="id_password">ÙƒÙ„Ù…Ø© Ø§Ù„Ù…Ø±ÙˆØ±</label>
+          <label for="id_password">كلمة المرور</label>
           <div class="input-group">
             <div class="input-group-prepend">
               <span class="input-group-text"><i class="fas fa-lock"></i></span>
             </div>
-            <input type="password" name="password" id="id_password" class="form-control" placeholder="Ø£Ø¯Ø®Ù„ ÙƒÙ„Ù…Ø© Ø§Ù„Ù…Ø±ÙˆØ±" required>
+            <input type="password" name="password" id="id_password" class="form-control" placeholder="أدخل كلمة المرور" required>
           </div>
         </div>
         <button type="submit" class="btn btn-primary btn-block login-btn">
-          <i class="fas fa-sign-in-alt ml-2"></i> ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„
+          <i class="fas fa-sign-in-alt ml-2"></i> تسجيل الدخول
         </button>
       </form>
       <div class="footer-text">
