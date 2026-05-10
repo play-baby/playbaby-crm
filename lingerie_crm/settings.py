@@ -3,6 +3,18 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Force UTF-8 locale to prevent double-encoding of Arabic text
+import locale
+try:
+    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+except locale.Error:
+    try:
+        locale.setlocale(locale.LC_ALL, 'Arabic_Egypt.1256')
+    except locale.Error:
+        pass
+os.environ.setdefault('LANG', 'en_US.UTF-8')
+os.environ.setdefault('LC_ALL', 'en_US.UTF-8')
+
 SECRET_KEY = os.environ.get(
     'DJANGO_SECRET_KEY',
     'django-insecure-eh*byqoyo2^kcn^7vjieixc5=j3j4!7$edj0$-lxll&i=7xe88'
