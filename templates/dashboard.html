@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
-{% block title %}Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…{% endblock %}
+{% block title %}لوحة التحكم{% endblock %}
 {% block breadcrumb %}
-<li class="breadcrumb-item active">Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…</li>
+<li class="breadcrumb-item active">لوحة التحكم</li>
 {% endblock %}
 {% block extra_css %}
 <style>
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   DASHBOARD â€” PROFESSIONAL DARK THEME
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════════════════════════════════
+   DASHBOARD — PROFESSIONAL DARK THEME
+   ═══════════════════════════════════════════════ */
 
-/* â”€â”€ Metric Cards â”€â”€ */
+/* ── Metric Cards ── */
 .metric-card {
   background: linear-gradient(135deg, #141416, #1a1a1e) !important;
   border: 1px solid rgba(255,255,255,0.04) !important;
@@ -70,14 +70,14 @@
   margin-top: 2px;
 }
 
-/* â”€â”€ Mini Stats Row â”€â”€ */
+/* ── Mini Stats Row ── */
 .mini-stat { text-align: center; padding: 12px 4px; border-left: 1px solid rgba(255,255,255,0.04); transition: background 0.2s; }
 .mini-stat:last-child { border-left: none; }
 .mini-stat:hover { background: rgba(220,20,60,0.03); border-radius: 8px; }
 .mini-stat-value { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.5px; }
 .mini-stat-label { font-size: 0.65rem; color: rgba(255,255,255,0.4); font-weight: 500; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-/* â”€â”€ Chart Cards â”€â”€ */
+/* ── Chart Cards ── */
 .chart-card { border: 1px solid rgba(255,255,255,0.04) !important; border-radius: 16px !important; overflow: hidden; }
 .chart-card .card-header {
   background: transparent !important;
@@ -88,7 +88,7 @@
 .chart-card .card-title i { color: var(--pb-red); font-size: 0.9rem; }
 .chart-card .card-body { padding: 0.5rem 1rem 1rem !important; }
 
-/* â”€â”€ Activity Feed â”€â”€ */
+/* ── Activity Feed ── */
 .activity-feed { max-height: 360px; overflow-y: auto; }
 .activity-feed::-webkit-scrollbar { width: 3px; }
 .activity-feed::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
@@ -113,14 +113,14 @@
 .activity-meta { display: block; font-size: 0.68rem; color: rgba(255,255,255,0.3); margin-top: 1px; }
 .activity-amount { font-weight: 700; font-size: 0.78rem; color: #4caf50; white-space: nowrap; }
 
-/* â”€â”€ Stock Table â”€â”€ */
+/* ── Stock Table ── */
 .stock-table td { padding: 10px 12px !important; }
 .stock-table th { padding: 10px 12px !important; font-size: 0.75rem; }
 .stock-badge { font-size: 0.7rem; padding: 3px 10px; border-radius: 20px; font-weight: 700; }
 .stock-bar-track { height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
 .stock-bar-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
 
-/* â”€â”€ Rank Badge â”€â”€ */
+/* ── Rank Badge ── */
 .rank-badge {
   display: inline-flex; align-items: center; justify-content: center;
   width: 22px; height: 22px;
@@ -132,7 +132,7 @@
 .rank-3 { background: rgba(205,127,50,0.12); color: #cd7f32; }
 .rank-default { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); }
 
-/* â”€â”€ Financial Summary â”€â”€ */
+/* ── Financial Summary ── */
 .fin-summary { padding: 0.5rem 0; }
 .fin-stat { text-align: center; }
 .fin-stat-icon {
@@ -143,7 +143,7 @@
 .fin-stat-label { font-size: 0.72rem; color: rgba(255,255,255,0.4); font-weight: 500; }
 .fin-stat-value { font-size: 1.15rem; font-weight: 800; margin-top: 2px; }
 
-/* â”€â”€ Responsive â”€â”€ */
+/* ── Responsive ── */
 @media (max-width: 575.98px) {
   .metric-value { font-size: 1.2rem; }
   .metric-icon { width: 36px; height: 36px; font-size: 0.95rem; }
@@ -154,7 +154,7 @@
 
 {% block content %}
 
-<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• TOP METRIC CARDS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- ═══════════════ TOP METRIC CARDS ═══════════════ -->
 <div class="row">
   <div class="col-lg-3 col-6 mb-3">
     <div class="card metric-card metric-card--red">
@@ -164,7 +164,7 @@
           <span class="metric-change metric-change--up">+{{ customers_count }}</span>
         </div>
         <div class="metric-value"><span class="counter" data-target="{{ customers_count }}">0</span></div>
-        <div class="metric-label">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡</div>
+        <div class="metric-label">إجمالي العملاء</div>
       </div>
     </div>
   </div>
@@ -174,13 +174,13 @@
         <div class="metric-top">
           <div class="metric-icon metric-icon--orange"><i class="fas fa-box"></i></div>
           {% if low_stock > 0 %}
-          <span class="metric-change metric-change--down">{{ low_stock }} Ù…Ù†Ø®ÙØ¶</span>
+          <span class="metric-change metric-change--down">{{ low_stock }} منخفض</span>
           {% else %}
-          <span class="metric-change metric-change--up">Ù…ØªÙˆÙØ±</span>
+          <span class="metric-change metric-change--up">متوفر</span>
           {% endif %}
         </div>
         <div class="metric-value"><span class="counter" data-target="{{ products_count }}">0</span></div>
-        <div class="metric-label">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª</div>
+        <div class="metric-label">إجمالي المنتجات</div>
       </div>
     </div>
   </div>
@@ -192,7 +192,7 @@
           <span class="metric-change metric-change--up">{{ invoices_count }}</span>
         </div>
         <div class="metric-value"><span class="counter" data-target="{{ invoices_count }}">0</span></div>
-        <div class="metric-label">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„ÙÙˆØ§ØªÙŠØ±</div>
+        <div class="metric-label">إجمالي الفواتير</div>
       </div>
     </div>
   </div>
@@ -201,16 +201,16 @@
       <div class="card-body">
         <div class="metric-top">
           <div class="metric-icon metric-icon--green"><i class="fas fa-money-bill-wave"></i></div>
-          <span class="metric-change metric-change--up">{{ total_revenue|floatformat:0 }} Ø¬.Ù…</span>
+          <span class="metric-change metric-change--up">{{ total_revenue|floatformat:0 }} ج.م</span>
         </div>
-        <div class="metric-value">{{ total_revenue|floatformat:2 }} <small style="font-size:0.5rem;font-weight:400;color:rgba(255,255,255,0.3);">Ø¬.Ù…</small></div>
-        <div class="metric-label">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª</div>
+        <div class="metric-value">{{ total_revenue|floatformat:2 }} <small style="font-size:0.5rem;font-weight:400;color:rgba(255,255,255,0.3);">ج.م</small></div>
+        <div class="metric-label">إجمالي الإيرادات</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• TODAY / WEEK / MONTH â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- ═══════════════ TODAY / WEEK / MONTH ═══════════════ -->
 <div class="row mb-3">
   <div class="col-12">
     <div class="card chart-card">
@@ -218,27 +218,27 @@
         <div class="row">
           <div class="col-4 col-md-2 mini-stat">
             <div class="mini-stat-value text-danger">{{ today_count }}</div>
-            <div class="mini-stat-label">ÙÙˆØ§ØªÙŠØ± Ø§Ù„ÙŠÙˆÙ…</div>
+            <div class="mini-stat-label">فواتير اليوم</div>
           </div>
           <div class="col-4 col-md-2 mini-stat">
             <div class="mini-stat-value text-success">{{ today_revenue|floatformat:0 }}</div>
-            <div class="mini-stat-label">Ø¥ÙŠØ±Ø§Ø¯ Ø§Ù„ÙŠÙˆÙ…</div>
+            <div class="mini-stat-label">إيراد اليوم</div>
           </div>
           <div class="col-4 col-md-2 mini-stat">
             <div class="mini-stat-value text-warning">{{ week_count }}</div>
-            <div class="mini-stat-label">ÙÙˆØ§ØªÙŠØ± Ø§Ù„Ø£Ø³Ø¨ÙˆØ¹</div>
+            <div class="mini-stat-label">فواتير الأسبوع</div>
           </div>
           <div class="col-4 col-md-2 mini-stat">
             <div class="mini-stat-value text-info">{{ week_revenue|floatformat:0 }}</div>
-            <div class="mini-stat-label">Ø¥ÙŠØ±Ø§Ø¯ Ø§Ù„Ø£Ø³Ø¨ÙˆØ¹</div>
+            <div class="mini-stat-label">إيراد الأسبوع</div>
           </div>
           <div class="col-4 col-md-2 mini-stat">
             <div class="mini-stat-value" style="color:#ba68c8;">{{ month_revenue|floatformat:0 }}</div>
-            <div class="mini-stat-label">Ø¥ÙŠØ±Ø§Ø¯ Ø§Ù„Ø´Ù‡Ø±</div>
+            <div class="mini-stat-label">إيراد الشهر</div>
           </div>
           <div class="col-4 col-md-2 mini-stat">
             <div class="mini-stat-value {% if out_of_stock > 0 %}text-danger{% else %}text-success{% endif %}">{{ out_of_stock }}</div>
-            <div class="mini-stat-label">Ù†ÙØ¯ Ù…Ù† Ø§Ù„Ù…Ø®Ø²ÙˆÙ†</div>
+            <div class="mini-stat-label">نفد من المخزون</div>
           </div>
         </div>
       </div>
@@ -246,12 +246,12 @@
   </div>
 </div>
 
-<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• CHARTS ROW â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- ═══════════════ CHARTS ROW ═══════════════ -->
 <div class="row mb-3">
   <div class="col-lg-8 mb-3 mb-lg-0">
     <div class="card chart-card h-100">
       <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-chart-line"></i>Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª Ø§Ù„Ø´Ù‡Ø±ÙŠØ©</h3>
+        <h3 class="card-title"><i class="fas fa-chart-line"></i>الإيرادات الشهرية</h3>
         <div class="card-tools">
           <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
         </div>
@@ -264,7 +264,7 @@
   <div class="col-lg-4">
     <div class="card chart-card h-100">
       <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-chart-pie"></i>Ø·Ø±Ù‚ Ø§Ù„Ø¯ÙØ¹</h3>
+        <h3 class="card-title"><i class="fas fa-chart-pie"></i>طرق الدفع</h3>
         <div class="card-tools">
           <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
         </div>
@@ -276,14 +276,14 @@
   </div>
 </div>
 
-<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• LISTS ROW â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- ═══════════════ LISTS ROW ═══════════════ -->
 <div class="row mb-3">
   <div class="col-lg-4 mb-3 mb-lg-0">
     <div class="card chart-card h-100">
       <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-clock"></i>Ø¢Ø®Ø± Ø§Ù„Ù†Ø´Ø§Ø·Ø§Øª</h3>
+        <h3 class="card-title"><i class="fas fa-clock"></i>آخر النشاطات</h3>
         <div class="card-tools">
-          <a href="{% url 'invoice_list' %}" class="btn btn-sm" style="background:rgba(220,20,60,0.08);color:var(--pb-red);border-radius:8px;font-size:0.7rem;padding:3px 10px;">Ø¹Ø±Ø¶ Ø§Ù„ÙƒÙ„</a>
+          <a href="{% url 'invoice_list' %}" class="btn btn-sm" style="background:rgba(220,20,60,0.08);color:var(--pb-red);border-radius:8px;font-size:0.7rem;padding:3px 10px;">عرض الكل</a>
         </div>
       </div>
       <div class="card-body p-0 activity-feed">
@@ -292,12 +292,12 @@
           <div class="activity-dot"></div>
           <div class="activity-text">
             <a href="{% url 'invoice_detail' inv.id %}">{{ inv.invoice_number }}</a>
-            <span class="activity-meta">{{ inv.customer.name|default:"---" }} Â· {{ inv.created_by.username|default:"?" }}</span>
+            <span class="activity-meta">{{ inv.customer.name|default:"---" }} · {{ inv.created_by.username|default:"?" }}</span>
           </div>
-          <div class="activity-amount">{{ inv.total_amount|floatformat:2 }} Ø¬.Ù…</div>
+          <div class="activity-amount">{{ inv.total_amount|floatformat:2 }} ج.م</div>
         </div>
         {% empty %}
-        <div class="text-center text-muted py-4" style="font-size:0.85rem;">Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ù†Ø´Ø§Ø·Ø§Øª Ø­Ø¯ÙŠØ«Ø©</div>
+        <div class="text-center text-muted py-4" style="font-size:0.85rem;">لا يوجد نشاطات حديثة</div>
         {% endfor %}
       </div>
     </div>
@@ -305,15 +305,15 @@
   <div class="col-lg-4 mb-3 mb-lg-0">
     <div class="card chart-card h-100">
       <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i>ØªÙ†Ø¨ÙŠÙ‡Ø§Øª Ø§Ù„Ù…Ø®Ø²ÙˆÙ†</h3>
+        <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i>تنبيهات المخزون</h3>
         <div class="card-tools">
-          <a href="{% url 'product_list' %}" class="btn btn-sm" style="background:rgba(220,20,60,0.08);color:var(--pb-red);border-radius:8px;font-size:0.7rem;padding:3px 10px;">Ø¹Ø±Ø¶ Ø§Ù„ÙƒÙ„</a>
+          <a href="{% url 'product_list' %}" class="btn btn-sm" style="background:rgba(220,20,60,0.08);color:var(--pb-red);border-radius:8px;font-size:0.7rem;padding:3px 10px;">عرض الكل</a>
         </div>
       </div>
       <div class="card-body p-0">
         {% if low_stock_products %}
         <table class="table table-hover mb-0 stock-table">
-          <thead><tr><th>Ø§Ù„Ù…Ù†ØªØ¬</th><th>Ø§Ù„ÙƒÙ…ÙŠØ©</th><th></th></tr></thead>
+          <thead><tr><th>المنتج</th><th>الكمية</th><th></th></tr></thead>
           <tbody>
             {% for p in low_stock_products %}
             <tr>
@@ -335,7 +335,7 @@
         {% else %}
         <div class="text-center text-muted py-4">
           <i class="fas fa-check-circle text-success" style="font-size:1.8rem;opacity:0.5;"></i>
-          <p class="mt-2" style="font-size:0.85rem;">Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ù…ØªÙˆÙØ±Ø© Ø¨Ø§Ù„Ù…Ø®Ø²ÙˆÙ†</p>
+          <p class="mt-2" style="font-size:0.85rem;">جميع المنتجات متوفرة بالمخزون</p>
         </div>
         {% endif %}
       </div>
@@ -344,39 +344,39 @@
   <div class="col-lg-4">
     <div class="card chart-card h-100">
       <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-crown"></i>Ø£ÙØ¶Ù„ Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡</h3>
+        <h3 class="card-title"><i class="fas fa-crown"></i>أفضل العملاء</h3>
         <div class="card-tools">
-          <a href="{% url 'customer_list' %}" class="btn btn-sm" style="background:rgba(220,20,60,0.08);color:var(--pb-red);border-radius:8px;font-size:0.7rem;padding:3px 10px;">Ø¹Ø±Ø¶ Ø§Ù„ÙƒÙ„</a>
+          <a href="{% url 'customer_list' %}" class="btn btn-sm" style="background:rgba(220,20,60,0.08);color:var(--pb-red);border-radius:8px;font-size:0.7rem;padding:3px 10px;">عرض الكل</a>
         </div>
       </div>
       <div class="card-body p-0">
         {% if top_customers %}
         <table class="table table-hover mb-0 stock-table">
-          <thead><tr><th style="width:40px;">#</th><th>Ø§Ù„Ø¹Ù…ÙŠÙ„</th><th>Ø§Ù„Ù…Ø´ØªØ±ÙŠØ§Øª</th></tr></thead>
+          <thead><tr><th style="width:40px;">#</th><th>العميل</th><th>المشتريات</th></tr></thead>
           <tbody>
             {% for c in top_customers %}
             <tr>
               <td><span class="rank-badge rank-{{ forloop.counter }}">{{ forloop.counter }}</span></td>
               <td><a href="{% url 'customer_detail' c.id %}" style="font-size:0.82rem;">{{ c.name }}</a></td>
-              <td class="font-weight-bold" style="color:#4caf50;font-size:0.82rem;">{{ c.total_amount|floatformat:2 }} Ø¬.Ù…</td>
+              <td class="font-weight-bold" style="color:#4caf50;font-size:0.82rem;">{{ c.total_amount|floatformat:2 }} ج.م</td>
             </tr>
             {% endfor %}
           </tbody>
         </table>
         {% else %}
-        <div class="text-center text-muted py-4" style="font-size:0.85rem;">Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ø¹Ù…Ù„Ø§Ø¡</div>
+        <div class="text-center text-muted py-4" style="font-size:0.85rem;">لا يوجد عملاء</div>
         {% endif %}
       </div>
     </div>
   </div>
 </div>
 
-<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• TOP PRODUCTS + STATUS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- ═══════════════ TOP PRODUCTS + STATUS ═══════════════ -->
 <div class="row mb-3">
   <div class="col-lg-6 mb-3 mb-lg-0">
     <div class="card chart-card h-100">
       <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-chart-bar"></i>Ø£ÙØ¶Ù„ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ù…Ø¨ÙŠØ¹Ø§Ù‹</h3>
+        <h3 class="card-title"><i class="fas fa-chart-bar"></i>أفضل المنتجات مبيعاً</h3>
         <div class="card-tools">
           <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
         </div>
@@ -385,7 +385,7 @@
         {% if top_products %}
         <canvas id="topProductsChart"></canvas>
         {% else %}
-        <p class="text-muted text-center py-4" style="font-size:0.85rem;">Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª ÙƒØ§ÙÙŠØ©</p>
+        <p class="text-muted text-center py-4" style="font-size:0.85rem;">لا توجد بيانات كافية</p>
         {% endif %}
       </div>
     </div>
@@ -393,7 +393,7 @@
   <div class="col-lg-6">
     <div class="card chart-card h-100">
       <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-tags"></i>Ø­Ø§Ù„Ø§Øª Ø§Ù„ÙÙˆØ§ØªÙŠØ±</h3>
+        <h3 class="card-title"><i class="fas fa-tags"></i>حالات الفواتير</h3>
         <div class="card-tools">
           <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
         </div>
@@ -402,41 +402,41 @@
         {% if status_labels %}
         <canvas id="statusChart"></canvas>
         {% else %}
-        <p class="text-muted text-center py-4" style="font-size:0.85rem;">Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª ÙƒØ§ÙÙŠØ©</p>
+        <p class="text-muted text-center py-4" style="font-size:0.85rem;">لا توجد بيانات كافية</p>
         {% endif %}
       </div>
     </div>
   </div>
 </div>
 
-<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• FINANCIAL SUMMARY â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- ═══════════════ FINANCIAL SUMMARY ═══════════════ -->
 <div class="row">
   <div class="col-12">
     <div class="card chart-card">
       <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-wallet"></i>Ø§Ù„Ù…Ù„Ø®Øµ Ø§Ù„Ù…Ø§Ù„ÙŠ</h3>
+        <h3 class="card-title"><i class="fas fa-wallet"></i>الملخص المالي</h3>
       </div>
       <div class="card-body fin-summary">
         <div class="row">
           <div class="col-md-4 mb-3 mb-md-0">
             <div class="fin-stat">
               <div class="fin-stat-icon" style="background:linear-gradient(135deg,#2e7d32,#4caf50);"><i class="fas fa-arrow-up"></i></div>
-              <div class="fin-stat-label">Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª Ø§Ù„ÙƒÙ„ÙŠØ©</div>
-              <div class="fin-stat-value text-success">{{ total_revenue|floatformat:2 }} Ø¬.Ù…</div>
+              <div class="fin-stat-label">الإيرادات الكلية</div>
+              <div class="fin-stat-value text-success">{{ total_revenue|floatformat:2 }} ج.م</div>
             </div>
           </div>
           <div class="col-md-4 mb-3 mb-md-0">
             <div class="fin-stat">
               <div class="fin-stat-icon" style="background:linear-gradient(135deg,#0097a7,#00bcd4);"><i class="fas fa-check"></i></div>
-              <div class="fin-stat-label">Ø§Ù„Ù…Ø¯ÙÙˆØ¹</div>
-              <div class="fin-stat-value text-info">{{ total_paid|floatformat:2 }} Ø¬.Ù…</div>
+              <div class="fin-stat-label">المدفوع</div>
+              <div class="fin-stat-value text-info">{{ total_paid|floatformat:2 }} ج.م</div>
             </div>
           </div>
           <div class="col-md-4 mb-3 mb-md-0">
             <div class="fin-stat">
               <div class="fin-stat-icon" style="background:linear-gradient(135deg,#c62828,#e53935);"><i class="fas fa-clock"></i></div>
-              <div class="fin-stat-label">Ø§Ù„Ù…ØªØ¨Ù‚ÙŠ</div>
-              <div class="fin-stat-value text-danger">{{ outstanding|floatformat:2 }} Ø¬.Ù…</div>
+              <div class="fin-stat-label">المتبقي</div>
+              <div class="fin-stat-value text-danger">{{ outstanding|floatformat:2 }} ج.م</div>
             </div>
           </div>
         </div>
@@ -444,19 +444,19 @@
         <hr style="border-color:rgba(255,255,255,0.06);margin:16px 0;">
         <div class="row">
           <div class="col-6 col-md-3 mb-2 mb-md-0 text-center">
-            <div class="fin-stat-label">ØµØ§ÙÙŠ Ø§Ù„Ø±Ø¨Ø­</div>
-            <div class="fin-stat-value" style="color:#ff9800;">{{ profit|floatformat:2 }} Ø¬.Ù…</div>
+            <div class="fin-stat-label">صافي الربح</div>
+            <div class="fin-stat-value" style="color:#ff9800;">{{ profit|floatformat:2 }} ج.م</div>
           </div>
           <div class="col-6 col-md-3 mb-2 mb-md-0 text-center">
-            <div class="fin-stat-label">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„ØªÙƒÙ„ÙØ©</div>
-            <div class="fin-stat-value text-warning">{{ total_cost|floatformat:2 }} Ø¬.Ù…</div>
+            <div class="fin-stat-label">إجمالي التكلفة</div>
+            <div class="fin-stat-value text-warning">{{ total_cost|floatformat:2 }} ج.م</div>
           </div>
           <div class="col-6 col-md-3 mb-2 mb-md-0 text-center">
-            <div class="fin-stat-label">Ù†Ø³Ø¨Ø© Ø§Ù„Ø±Ø¨Ø­</div>
+            <div class="fin-stat-label">نسبة الربح</div>
             <div class="fin-stat-value" style="color:#00bcd4;">{{ profit_margin|floatformat:1 }}%</div>
           </div>
           <div class="col-6 col-md-3 mb-2 mb-md-0 text-center">
-            <div class="fin-stat-label">ÙÙˆØ§ØªÙŠØ± ØºÙŠØ± Ù…Ø¯ÙÙˆØ¹Ø©</div>
+            <div class="fin-stat-label">فواتير غير مدفوعة</div>
             <div class="fin-stat-value text-danger">{{ unpaid_invoices_count }}</div>
           </div>
         </div>
@@ -473,7 +473,7 @@
 <script>
 $(document).ready(function() {
 
-  // â”€â”€ Animated Counters â”€â”€
+  // ── Animated Counters ──
   function animateCounters() {
     $('.counter').each(function() {
       var $this = $(this);
@@ -501,11 +501,11 @@ $(document).ready(function() {
     observer.observe(document.querySelector('.metric-card'));
   } else { animateCounters(); }
 
-  // â”€â”€ Chart.js Global â”€â”€
+  // ── Chart.js Global ──
   Chart.defaults.color = 'rgba(255,255,255,0.5)';
   Chart.defaults.font.family = 'Tajawal, sans-serif';
 
-  // â”€â”€ 1. Revenue Line â”€â”€
+  // ── 1. Revenue Line ──
   var ctx1 = document.getElementById('revenueChart');
   if (ctx1) {
     new Chart(ctx1, {
@@ -513,7 +513,7 @@ $(document).ready(function() {
       data: {
         labels: {{ monthly_labels|safe }},
         datasets: [{
-          label: 'Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª',
+          label: 'الإيرادات',
           data: {{ monthly_revenue|safe }},
           borderColor: '#dc143c',
           backgroundColor: 'rgba(220,20,60,0.08)',
@@ -525,7 +525,7 @@ $(document).ready(function() {
           pointHoverRadius: 6,
           borderWidth: 2.5,
         }, {
-          label: 'Ø§Ù„Ù…Ø¯ÙÙˆØ¹Ø§Øª',
+          label: 'المدفوعات',
           data: {{ monthly_paid|safe }},
           borderColor: '#00bcd4',
           backgroundColor: 'rgba(0,188,212,0.05)',
@@ -550,7 +550,7 @@ $(document).ready(function() {
     });
   }
 
-  // â”€â”€ 2. Payment Doughnut â”€â”€
+  // ── 2. Payment Doughnut ──
   var ctx2 = document.getElementById('paymentChart');
   if (ctx2) {
     new Chart(ctx2, {
@@ -574,7 +574,7 @@ $(document).ready(function() {
     });
   }
 
-  // â”€â”€ 3. Top Products Horizontal Bar â”€â”€
+  // ── 3. Top Products Horizontal Bar ──
   var ctx3 = document.getElementById('topProductsChart');
   {% if top_products %}
   if (ctx3) {
@@ -583,7 +583,7 @@ $(document).ready(function() {
       data: {
         labels: [{% for p in top_products %}'{{ p.product_name }}',{% endfor %}],
         datasets: [{
-          label: 'Ø§Ù„ÙƒÙ…ÙŠØ© Ø§Ù„Ù…Ø¨Ø§Ø¹Ø©',
+          label: 'الكمية المباعة',
           data: [{% for p in top_products %}{{ p.total_qty }},{% endfor %}],
           backgroundColor: [
             'rgba(220,20,60,0.7)', 'rgba(255,152,0,0.7)',
@@ -607,7 +607,7 @@ $(document).ready(function() {
   }
   {% endif %}
 
-  // â”€â”€ 4. Status Doughnut â”€â”€
+  // ── 4. Status Doughnut ──
   var ctx4 = document.getElementById('statusChart');
   {% if status_labels %}
   if (ctx4) {
