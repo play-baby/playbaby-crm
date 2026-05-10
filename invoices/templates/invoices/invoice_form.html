@@ -117,17 +117,22 @@
               </td>
             </tr>
             <tr>
-              <td colspan="5" class="text-left">المجموع الفرعي</td>
+              <td colspan="6" class="text-left">المجموع الفرعي</td>
               <td id="subtotalDisplay">0.00 ج.م</td>
               <td></td>
             </tr>
+            <tr id="itemDiscountRow" style="display:none;">
+              <td colspan="6" class="text-left">خصم على العناصر</td>
+              <td id="itemDiscountDisplay">0.00 ج.م</td>
+              <td></td>
+            </tr>
             <tr>
-              <td colspan="5" class="text-left">خصم على الفاتورة</td>
+              <td colspan="6" class="text-left">خصم على الفاتورة</td>
               <td id="invoiceDiscountDisplay">0 %</td>
               <td></td>
             </tr>
             <tr class="font-weight-bold" style="font-size:1.2rem;">
-              <td colspan="5" class="text-left">الإجمالي الكلي</td>
+              <td colspan="6" class="text-left">الإجمالي الكلي</td>
               <td id="grandTotal">0.00 ج.م</td>
               <td></td>
             </tr>
@@ -228,15 +233,29 @@ function getInvoiceDiscount() {
 }
 
 function calcGrandTotal() {
-  var subtotal = 0;
-  $('.item-total').each(function() {
-    subtotal += parseFloat($(this).val()) || 0;
+  var rawSubtotal = 0;
+  var itemsNet = 0;
+  $('#itemsBody tr.item-row:visible').each(function() {
+    var qty = parseFloat($(this).find('.item-qty').val()) || 0;
+    var price = parseFloat($(this).find('.item-price').val()) || 0;
+    var discount = parseFloat($(this).find('.item-discount').val()) || 0;
+    var total = qty * price;
+    var net = total * (1 - discount / 100);
+    rawSubtotal += total;
+    itemsNet += net;
   });
-  var invDiscount = getInvoiceDiscount();
-  var invDiscountVal = subtotal * (invDiscount / 100);
-  var grandTotal = subtotal - invDiscountVal;
-  $('#subtotalDisplay').text(subtotal.toFixed(2) + ' ج.م');
-  $('#invoiceDiscountDisplay').text(invDiscount.toFixed(2) + ' %');
+  var itemDiscount = rawSubtotal - itemsNet;
+  var invDiscountPct = getInvoiceDiscount();
+  var invDiscountVal = itemsNet * (invDiscountPct / 100);
+  var grandTotal = itemsNet - invDiscountVal;
+  $('#subtotalDisplay').text(rawSubtotal.toFixed(2) + ' ج.م');
+  if (itemDiscount > 0.005) {
+    $('#itemDiscountRow').show();
+    $('#itemDiscountDisplay').text('- ' + itemDiscount.toFixed(2) + ' ج.م');
+  } else {
+    $('#itemDiscountRow').hide();
+  }
+  $('#invoiceDiscountDisplay').text(invDiscountPct.toFixed(2) + ' %');
   $('#grandTotal').text(grandTotal.toFixed(2) + ' ج.م');
 }
 
