@@ -9,6 +9,14 @@ from .forms import ProductForm
 from utils import export_csv, export_xlsx, import_csv, import_xlsx
 from lingerie_crm.roles import SalesRequiredMixin, OwnerRequiredMixin, is_sales, is_owner
 
+SORT_MAP_PRODUCT = {
+    'name': 'name',
+    'category': 'category__name',
+    'price': 'price',
+    'quantity': 'quantity',
+    'created_at': 'created_at',
+}
+
 class ProductListView(LoginRequiredMixin, ListView):
     model = Product
     template_name = 'products/product_list.html'
@@ -20,11 +28,20 @@ class ProductListView(LoginRequiredMixin, ListView):
         search = self.request.GET.get('search', '')
         if search:
             qs = qs.filter(name__icontains=search)
+        sort = self.request.GET.get('sort', '')
+        dir = self.request.GET.get('dir', '')
+        if sort in SORT_MAP_PRODUCT:
+            field = SORT_MAP_PRODUCT[sort]
+            if dir == 'desc':
+                field = '-' + field
+            qs = qs.order_by(field)
         return qs
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['search'] = self.request.GET.get('search', '')
+        ctx['sort'] = self.request.GET.get('sort', '')
+        ctx['dir'] = self.request.GET.get('dir', '')
         ctx['page_title'] = 'قائمة المنتجات'
         ctx['is_sales'] = is_sales(self.request.user) or is_owner(self.request.user)
         return ctx
