@@ -10,11 +10,16 @@ def site_settings(request):
     tmpl = InvoiceTemplate.get()
     user = request.user
     unread_count = 0
+    recent_notifications = []
     if user.is_authenticated:
         try:
-            unread_count = Notification.objects.filter(recipient=user, is_read=False).count()
+            notifications_qs = Notification.objects.filter(recipient=user)
+            unread_count = notifications_qs.filter(is_read=False).count()
+            recent_notifications = notifications_qs.select_related('invoice')[:5]
         except OperationalError:
+            # Safety net: Notification table may not exist if migration hasn't been applied
             unread_count = 0
+            recent_notifications = []
     return {
         'site_name': 'Play Baby Lingerie',
         'site_short_name': 'Play Baby CRM',
@@ -26,4 +31,5 @@ def site_settings(request):
         'is_shipping': user.is_authenticated and is_shipping(user) and not is_owner(user) and not user.is_superuser,
         'invoice_template': tmpl,
         'unread_notifications_count': unread_count,
+        'recent_notifications': recent_notifications,
     }

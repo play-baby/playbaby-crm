@@ -15,11 +15,11 @@ except locale.Error:
 os.environ.setdefault('LANG', 'en_US.UTF-8')
 os.environ.setdefault('LC_ALL', 'en_US.UTF-8')
 
-SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or os.environ.get('SECRET_KEY', 'django-insecure-dev-only-key')
 
 DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',

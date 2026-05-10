@@ -8,6 +8,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
 from django.utils.timezone import now
+from decimal import Decimal
 from django.db.models import Sum, Q
 from .models import Invoice, InvoiceItem, InvoiceStatus, InvoiceStatusLog, PaymentMethod, Notification
 from .forms import InvoiceForm, InvoiceItemFormSet, InvoiceStatusForm, PaymentMethodForm, InvoiceTemplateForm
@@ -235,6 +236,17 @@ class InvoiceDetailView(LoginRequiredMixin, DetailView):
             ctx['forward_statuses'] = InvoiceStatus.objects.exclude(name='ملغي').filter(order__gt=self.object.status.order)
         else:
             ctx['forward_statuses'] = InvoiceStatus.objects.exclude(name='ملغي')
+        # Compute revised total preview for sales approval screen
+        invoice = self.object
+        revised_items_total = Decimal('0')
+        for item in invoice.items.all():
+            qty = item.confirmed_quantity if item.confirmed_quantity is not None else item.quantity
+            line_total = qty * item.unit_price
+            dp = item.discount_percent or Decimal('0')
+            line_net = line_total * (Decimal('1') - dp / Decimal('100'))
+            revised_items_total += line_net
+        inv_dp = invoice.discount_percent or Decimal('0')
+        ctx['revised_total_preview'] = revised_items_total * (Decimal('1') - inv_dp / Decimal('100'))
         return ctx
 
 class InvoicePrintView(LoginRequiredMixin, DetailView):
@@ -321,6 +333,18 @@ def cancel_invoice(request, pk):
         invoice.cancel_reason = reason
         invoice._changed_by = request.user
         invoice.save()
+        UserModel = get_user_model()
+        recipients = UserModel.objects.filter(
+            groups__name__in=['shipping', 'sales', 'owner']
+        ).exclude(pk=request.user.pk).distinct()
+        for user in recipients:
+            Notification.objects.create(
+                invoice=invoice,
+                sender=request.user,
+                recipient=user,
+                notification_type='cancelled',
+                message=f'تم إلغاء الفاتورة {invoice.invoice_number} — السبب: {reason[:100]}'
+            )
         messages.success(request, f'تم إلغاء الفاتورة {invoice.invoice_number}')
     return redirect('invoice_detail', pk=pk)
 
@@ -525,6 +549,9 @@ def confirm_availability(request, pk):
     if invoice.is_cancelled:
         messages.error(request, 'لا يمكن تعديل فاتورة ملغية')
         return redirect('invoice_detail', pk=pk)
+    if invoice.revision_status != 'pending_shipping':
+        messages.error(request, 'تم تأكيد التوفر مسبقاً لهذه الفاتورة')
+        return redirect('invoice_detail', pk=pk)
     if request.method == 'POST':
         any_partial = False
         for key, value in request.POST.items():
@@ -532,7 +559,11 @@ def confirm_availability(request, pk):
                 item_id = key.split('_')[1]
                 try:
                     item = invoice.items.get(pk=item_id)
-                    confirmed = int(value)
+                    is_not_available = request.POST.get(f'not_available_{item_id}') == 'on'
+                    if is_not_available:
+                        confirmed = 0
+                    else:
+                        confirmed = int(value)
                     if confirmed < 0:
                         continue
                     if confirmed < item.quantity:
@@ -571,10 +602,14 @@ def approve_revision(request, pk):
         invoice.save(update_fields=['revision_status'])
         for item in invoice.items.all():
             if item.confirmed_quantity is not None:
-                item.quantity = item.confirmed_quantity
-                item.total = item.quantity * item.unit_price
-                item.confirmed_quantity = None
-                item.save(update_fields=['quantity', 'total', 'confirmed_quantity'])
+                if item.confirmed_quantity == 0:
+                    item.delete()
+                else:
+                    item.quantity = item.confirmed_quantity
+                    item.total = item.quantity * item.unit_price
+                    item.confirmed_quantity = None
+                    item.save(update_fields=['quantity', 'total', 'confirmed_quantity'])
+        invoice.refresh_from_db()
         invoice.recalculate_total()
         for user in UserModel.objects.filter(groups__name='shipping'):
             Notification.objects.create(

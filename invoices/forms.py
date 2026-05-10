@@ -2,7 +2,7 @@ from django import forms
 from django.forms import inlineformset_factory
 from .models import Invoice, InvoiceItem, InvoiceStatus, PaymentMethod
 from core.models import InvoiceTemplate
-from lingerie_crm.roles import is_shipping
+from lingerie_crm.roles import is_shipping, is_owner
 
 class InvoiceForm(forms.ModelForm):
     class Meta:
