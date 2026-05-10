@@ -9,6 +9,14 @@ from .forms import CustomerForm
 from utils import export_csv, export_xlsx, import_csv, import_xlsx
 from lingerie_crm.roles import SalesRequiredMixin, OwnerRequiredMixin, is_sales, is_owner
 
+SORT_MAP_CUSTOMER = {
+    'name': 'name',
+    'phone': 'phone',
+    'total_amount': 'total_amount',
+    'last_purchase': 'last_purchase_date',
+    'created_at': 'created_at',
+}
+
 class CustomerListView(LoginRequiredMixin, ListView):
     model = Customer
     template_name = 'customers/customer_list.html'
@@ -20,11 +28,20 @@ class CustomerListView(LoginRequiredMixin, ListView):
         search = self.request.GET.get('search', '')
         if search:
             qs = qs.filter(name__icontains=search) | qs.filter(phone__icontains=search)
+        sort = self.request.GET.get('sort', '')
+        dir = self.request.GET.get('dir', '')
+        if sort in SORT_MAP_CUSTOMER:
+            field = SORT_MAP_CUSTOMER[sort]
+            if dir == 'desc':
+                field = '-' + field
+            qs = qs.order_by(field)
         return qs
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['search'] = self.request.GET.get('search', '')
+        ctx['sort'] = self.request.GET.get('sort', '')
+        ctx['dir'] = self.request.GET.get('dir', '')
         ctx['page_title'] = 'قائمة العملاء'
         return ctx
 
