@@ -443,6 +443,8 @@
       left: 0;
     }
     select.form-control option { background: #1a1a1a; color: #fff; }
+    .form-control:disabled, .form-control[readonly] { background: #2a2a2a; color: #000 !important; opacity: 0.9; }
+    input.form-control:disabled, input.form-control[readonly] { color: #000 !important; -webkit-text-fill-color: #000; }
 
     /* === ALERTS === */
     .alert-success { background: rgba(220,20,60,0.15); border: 1px solid rgba(220,20,60,0.3); color: #ff8a80; }
