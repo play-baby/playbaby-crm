@@ -310,16 +310,15 @@ def update_invoice_status(request, pk):
         # Handle collection checkbox
         collected_date_str = request.POST.get('collected_date', '').strip()
         if collected == 'on':
-            if not invoice.is_collected:
-                invoice.is_collected = True
-                if collected_date_str:
-                    naive_date = datetime.strptime(collected_date_str, '%Y-%m-%d')
-                    invoice.collected_at = make_aware(naive_date)
-                else:
-                    invoice.collected_at = now()
-                invoice.collected_by = request.user
+            invoice.is_collected = True
+            if collected_date_str:
+                naive_date = datetime.strptime(collected_date_str, '%Y-%m-%d')
+                invoice.collected_at = make_aware(naive_date)
+            else:
+                invoice.collected_at = now()
+            invoice.collected_by = request.user
         else:
-            if invoice.is_collected and invoice.collected_by == request.user:
+            if invoice.is_collected and (invoice.collected_by == request.user or invoice.collected_by is None):
                 invoice.is_collected = False
                 invoice.collected_at = None
                 invoice.collected_by = None

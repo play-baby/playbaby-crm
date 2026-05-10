@@ -677,8 +677,12 @@ document.querySelectorAll('.not-available-check').forEach(function(chk) {
         <div>
           <strong style="color:#4caf50;">تم تحصيل قيمة الفاتورة بالكامل</strong>
           <div class="text-muted small">
-            بواسطة {{ invoice.collected_by.get_full_name|default:invoice.collected_by.username|default:"---" }}
-            في {{ invoice.collected_at|date:"Y-m-d h:i A"|default:"---" }}
+            {% if invoice.collected_by %}
+            بواسطة {{ invoice.collected_by.get_full_name|default:invoice.collected_by.username }}
+            {% endif %}
+            {% if invoice.collected_at %}
+            في {{ invoice.collected_at|date:"Y-m-d h:i A" }}
+            {% endif %}
           </div>
         </div>
       </div>
