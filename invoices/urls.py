@@ -35,4 +35,8 @@ urlpatterns = [
     path('<int:pk>/approve-revision/', views.approve_revision, name='approve_revision'),
     # Payments
     path('<int:pk>/add-payment/', views.add_payment, name='add_payment'),
+    # Collection confirmation
+    path('<int:pk>/confirm-collection/', views.confirm_collection, name='confirm_collection'),
+    # Customer Balances
+    path('balances/customers/', views.CustomerBalanceView.as_view(), name='customer_balances'),
 ]

@@ -686,6 +686,13 @@
             </a>
           </li>
           {% if is_owner or user.is_superuser %}
+          <li class="nav-header">المالية</li>
+          <li class="nav-item">
+            <a href="{% url 'customer_balances' %}" class="nav-link {% if request.resolver_match.url_name == 'customer_balances' %}active{% endif %}">
+              <i class="nav-icon fas fa-hand-holding-usd"></i>
+              <p>أرصدة العملاء</p>
+            </a>
+          </li>
           <li class="nav-header">التقارير</li>
           <li class="nav-item">
             <a href="{% url 'reports:report_revenue' %}" class="nav-link {% if request.resolver_match.app_name == 'reports' %}active{% endif %}">

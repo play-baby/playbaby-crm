@@ -119,9 +119,6 @@ class InvoiceCreateView(SalesRequiredMixin, CreateView):
             formset.instance = self.object
             formset.save()
             self.object.recalculate_total()
-            if self.object.paid_amount > self.object.total_amount:
-                self.object.paid_amount = self.object.total_amount
-                self.object.save(update_fields=['paid_amount'])
             messages.success(self.request, f'تم إنشاء الفاتورة {self.object.invoice_number} بنجاح')
             return redirect(self.success_url)
         return self.render_to_response(self.get_context_data(form=form))
@@ -299,7 +296,6 @@ def update_invoice_status(request, pk):
     if request.method == 'POST':
         status_id = request.POST.get('status')
         payment_id = request.POST.get('payment_method')
-        paid_amount = request.POST.get('paid_amount')
         if status_id:
             new_status = get_object_or_404(InvoiceStatus, pk=status_id)
             if invoice.status and new_status.order <= invoice.status.order:
@@ -309,11 +305,6 @@ def update_invoice_status(request, pk):
             invoice.status_id = status_id
         if payment_id:
             invoice.payment_method_id = payment_id
-        if paid_amount is not None and paid_amount != '':
-            try:
-                invoice.paid_amount = float(paid_amount)
-            except ValueError:
-                pass
         invoice._changed_by = request.user
         invoice.save()
         messages.success(request, f'تم تحديث حالة الفاتورة {invoice.invoice_number} بنجاح')
@@ -512,6 +503,97 @@ class InvoiceTemplateUpdateView(LoginRequiredMixin, OwnerRequiredMixin, UpdateVi
         resp = super().form_valid(form)
         messages.success(self.request, 'تم حفظ تصميم الفاتورة بنجاح')
         return resp
+
+
+# ═══════════════════════════════════════════════
+# COLLECTION CONFIRMATION
+# ═══════════════════════════════════════════════
+
+@login_required
+def confirm_collection(request, pk):
+    if not (is_sales(request.user) or is_owner(request.user)):
+        messages.error(request, 'ليس لديك صلاحية')
+        return redirect('home')
+    invoice = get_object_or_404(Invoice, pk=pk)
+    if invoice.is_cancelled:
+        messages.error(request, 'لا يمكن تحصيل فاتورة ملغية')
+        return redirect('invoice_detail', pk=pk)
+    if request.method == 'POST':
+        if request.POST.get('confirm') == 'yes':
+            invoice.is_collected = True
+            invoice.collected_at = now()
+            invoice.collected_by = request.user
+            invoice.save(update_fields=['is_collected', 'collected_at', 'collected_by'])
+            UserModel = get_user_model()
+            recipients = UserModel.objects.filter(
+                groups__name__in=['shipping', 'sales', 'owner']
+            ).exclude(pk=request.user.pk).distinct()
+            for user in recipients:
+                Notification.objects.create(
+                    invoice=invoice,
+                    sender=request.user,
+                    recipient=user,
+                    notification_type='availability_confirmed',
+                    message=f'تم تحصيل الفاتورة {invoice.invoice_number} بالكامل'
+                )
+            messages.success(request, 'تم تأكيد التحصيل بنجاح')
+        elif request.POST.get('reverse') == 'yes':
+            invoice.is_collected = False
+            invoice.collected_at = None
+            invoice.collected_by = None
+            invoice.save(update_fields=['is_collected', 'collected_at', 'collected_by'])
+            messages.success(request, 'تم إلغاء تأكيد التحصيل')
+    return redirect('invoice_detail', pk=pk)
+
+
+# ═══════════════════════════════════════════════
+# CUSTOMER BALANCES (أرصدة العملاء)
+# ═══════════════════════════════════════════════
+
+class CustomerBalanceView(LoginRequiredMixin, ListView):
+    model = Invoice
+    template_name = 'invoices/customer_balances.html'
+    context_object_name = 'invoices'
+    paginate_by = 20
+
+    def get_queryset(self):
+        qs = Invoice.objects.select_related('customer', 'status', 'payment_method')
+        cust_id = self.request.GET.get('customer')
+        if cust_id:
+            qs = qs.filter(customer_id=cust_id)
+        search = self.request.GET.get('search', '')
+        if search:
+            qs = qs.filter(invoice_number__icontains=search) | qs.filter(customer__name__icontains=search)
+        return qs.order_by('-date')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['page_title'] = 'أرصدة العملاء'
+        ctx['search'] = self.request.GET.get('search', '')
+        from customers.models import Customer
+        # Aggregate per-customer balances
+        all_customers = Customer.objects.filter(
+            pk__in=Invoice.objects.values_list('customer', flat=True).distinct()
+        )
+        balance_data = []
+        for c in all_customers:
+            invs = Invoice.objects.filter(customer=c)
+            total_amt = invs.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+            total_paid = invs.aggregate(Sum('paid_amount'))['paid_amount__sum'] or 0
+            balance_data.append({
+                'customer': c,
+                'invoice_count': invs.count(),
+                'total_amount': total_amt,
+                'paid_amount': total_paid,
+                'remaining': total_amt - total_paid,
+            })
+        balance_data.sort(key=lambda x: x['remaining'], reverse=True)
+        ctx['balance_data'] = balance_data
+        ctx['grand_total'] = sum(b['total_amount'] for b in balance_data)
+        ctx['grand_paid'] = sum(b['paid_amount'] for b in balance_data)
+        ctx['grand_remaining'] = sum(b['remaining'] for b in balance_data)
+        ctx['selected_customer'] = self.request.GET.get('customer', '')
+        return ctx
 
 
 # ═══════════════════════════════════════════════

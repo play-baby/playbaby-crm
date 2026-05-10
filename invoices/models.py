@@ -59,6 +59,9 @@ class Invoice(models.Model):
             ('approved', 'تمت الموافقة'),
             ('rejected', 'مرفوض'),
         ])
+    is_collected = models.BooleanField('تم التحصيل', default=False)
+    collected_at = models.DateTimeField('تاريخ التحصيل', null=True, blank=True)
+    collected_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='collected_invoices', verbose_name='تم التحصيل بواسطة')
 
     class Meta:
         verbose_name = 'فاتورة'
@@ -301,6 +304,16 @@ def update_invoice_paid_amount(sender, instance, **kwargs):
         total = invoice.total_amount
     if invoice.paid_amount != total:
         Invoice.objects.filter(pk=invoice.pk).update(paid_amount=total)
+    # Auto-detect collection when fully paid
+    if total >= invoice.total_amount and invoice.total_amount > 0 and not invoice.is_collected:
+        from django.utils.timezone import now
+        Invoice.objects.filter(pk=invoice.pk).update(
+            is_collected=True,
+            collected_at=now(),
+        )
+    # Auto-unset collection if paid drops below total AND was auto-collected (no collected_by)
+    elif total < invoice.total_amount and invoice.is_collected and invoice.collected_by is None:
+        Invoice.objects.filter(pk=invoice.pk).update(is_collected=False, collected_at=None)
 
 
 @receiver(pre_save, sender=Invoice)

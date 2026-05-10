@@ -87,6 +87,49 @@
       </div>
     </div>
 
+    <!-- Balance Summary Card -->
+    <div class="card mt-3" style="background:linear-gradient(135deg, #0a0a0a, #141414);border:1px solid #222;">
+      <div class="card-body">
+        <div class="row text-center">
+          <div class="col-4">
+            <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);">إجمالي الفواتير</div>
+            <div style="font-size:1.3rem;font-weight:800;color:#fff;margin-top:4px;">
+              {{ total_invoices_amount|floatformat:2 }}
+            </div>
+            <div style="font-size:0.65rem;color:rgba(255,255,255,0.3);">ج.م</div>
+          </div>
+          <div class="col-4" style="border-right:1px solid #222;border-left:1px solid #222;">
+            <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);">المدفوع</div>
+            <div style="font-size:1.3rem;font-weight:800;color:#4caf50;margin-top:4px;">
+              {{ total_paid_invoices|floatformat:2 }}
+            </div>
+            <div style="font-size:0.65rem;color:rgba(255,255,255,0.3);">ج.م</div>
+          </div>
+          <div class="col-4">
+            <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);">المتبقي</div>
+            <div style="font-size:1.3rem;font-weight:800;color:var(--pb-red);margin-top:4px;">
+              {{ remaining_balance|floatformat:2 }}
+            </div>
+            <div style="font-size:0.65rem;color:rgba(255,255,255,0.3);">ج.م</div>
+          </div>
+        </div>
+        {% if total_invoices_amount %}
+        <div class="mt-3" style="height:4px;background:#222;border-radius:4px;overflow:hidden;">
+          <div style="height:100%;width:{% widthratio total_paid_invoices total_invoices_amount 100 %}%;background:linear-gradient(90deg,#4caf50,#66bb6a);border-radius:4px;transition:width 0.5s;"></div>
+        </div>
+        <div class="text-center mt-1">
+          <small style="color:rgba(255,255,255,0.3);">
+            {% widthratio total_paid_invoices total_invoices_amount 100 %}% مسدد
+          </small>
+        </div>
+        {% else %}
+        <div class="text-center mt-1">
+          <small style="color:rgba(255,255,255,0.2);">لا توجد فواتير</small>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
     <!-- Related Invoices -->
     <div class="card mt-3">
       <div class="card-header">

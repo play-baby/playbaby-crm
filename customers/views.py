@@ -80,6 +80,7 @@ class CustomerDetailView(LoginRequiredMixin, DetailView):
         ctx['invoices'] = Invoice.objects.filter(customer=self.object).select_related('status', 'payment_method').order_by('-date')[:20]
         ctx['total_paid_invoices'] = ctx['invoices'].aggregate(Sum('paid_amount'))['paid_amount__sum'] or 0
         ctx['total_invoices_amount'] = ctx['invoices'].aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+        ctx['remaining_balance'] = ctx['total_invoices_amount'] - ctx['total_paid_invoices']
         return ctx
 
 class CustomerDeleteView(OwnerRequiredMixin, DeleteView):

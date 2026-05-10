@@ -7,14 +7,13 @@ from lingerie_crm.roles import is_shipping, is_owner
 class InvoiceForm(forms.ModelForm):
     class Meta:
         model = Invoice
-        fields = ['invoice_number', 'customer', 'date', 'status', 'payment_method', 'paid_amount', 'discount_percent', 'notes']
+        fields = ['invoice_number', 'customer', 'date', 'status', 'payment_method', 'discount_percent', 'notes']
         widgets = {
             'invoice_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'مثال: INV-001'}),
             'customer': forms.Select(attrs={'class': 'form-control'}),
             'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
             'payment_method': forms.Select(attrs={'class': 'form-control'}),
-            'paid_amount': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0.00'}),
             'discount_percent': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0', 'min': '0', 'max': '100', 'step': '0.01'}),
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'ملاحظات...'}),
         }
@@ -24,7 +23,6 @@ class InvoiceForm(forms.ModelForm):
             'date': 'التاريخ',
             'status': 'حالة الطلب',
             'payment_method': 'طريقة الدفع',
-            'paid_amount': 'المدفوع',
             'discount_percent': 'خصم %',
             'notes': 'ملاحظات',
         }
@@ -41,7 +39,6 @@ class InvoiceForm(forms.ModelForm):
         if user and is_shipping(user):
             for fname in ['invoice_number', 'customer', 'date', 'notes']:
                 self.fields[fname].disabled = True
-            self.fields['paid_amount'].label = 'المبلغ المدفوع'
             self.fields['status'].required = False
             self.fields['payment_method'].required = False
 
@@ -54,23 +51,8 @@ class InvoiceForm(forms.ModelForm):
                     raise forms.ValidationError('لا يمكن الرجوع إلى حالة سابقة')
         return status
 
-    def clean_paid_amount(self):
-        paid = self.cleaned_data.get('paid_amount')
-        if paid is not None and paid < 0:
-            raise forms.ValidationError('المبلغ المدفوع لا يمكن أن يكون سالباً')
-        if paid is not None and self.instance and self.instance.pk and paid > self.instance.total_amount:
-            raise forms.ValidationError(f'المبلغ المدفوع ({paid}) لا يمكن أن يتجاوز الإجمالي ({self.instance.total_amount})')
-        return paid
-
     def clean(self):
-        cleaned_data = super().clean()
-        if self.instance and self.instance.pk:
-            paid = cleaned_data.get('paid_amount')
-            if paid is None:
-                paid = self.instance.paid_amount
-            if paid > self.instance.total_amount:
-                self.add_error('paid_amount', f'المبلغ المدفوع ({paid}) لا يمكن أن يتجاوز الإجمالي ({self.instance.total_amount})')
-        return cleaned_data
+        return super().clean()
 
 
 class InvoiceStatusForm(forms.ModelForm):

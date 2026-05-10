@@ -210,9 +210,10 @@
         </div>
         <div class="col-4 col-md-3">
           <div class="form-group">
-            <label>{{ form.paid_amount.label }}</label>
-            {{ form.paid_amount }}
-            {% if form.paid_amount.errors %}<small class="text-danger">{{ form.paid_amount.errors.0 }}</small>{% endif %}
+            <label>ملاحظات الدفع</label>
+            <p class="text-muted small" style="margin:0;padding:8px 0;border:1px dashed #333;border-radius:8px;text-align:center;">
+              <i class="fas fa-info-circle ml-1"></i> تضاف الدفعات من صفحة الفاتورة
+            </p>
           </div>
         </div>
         {% if not is_shipping %}

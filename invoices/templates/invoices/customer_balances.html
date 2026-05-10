@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'invoice_list' %}">الفواتير</a></li>
+<li class="breadcrumb-item active">{{ page_title }}</li>
+{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">{{ page_title }}</h3>
+    <div class="card-tools">
+      <form method="get" class="form-inline" style="gap:6px;">
+        <input type="text" name="search" class="form-control form-control-sm" placeholder="بحث..." value="{{ search }}">
+        <button type="submit" class="btn btn-sm btn-dark"><i class="fas fa-search"></i></button>
+        {% if search or selected_customer %}
+        <a href="{% url 'customer_balances' %}" class="btn btn-sm btn-secondary"><i class="fas fa-times"></i></a>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-sm table-hover mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>العميل</th>
+            <th>الهاتف</th>
+            <th>عدد الفواتير</th>
+            <th>الإجمالي</th>
+            <th>المدفوع</th>
+            <th style="color:var(--pb-red);">المتبقي</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in balance_data %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>
+              <a href="{% url 'customer_detail' b.customer.id %}" class="font-weight-bold" style="color:#fff;">
+                {{ b.customer.name }}
+              </a>
+            </td>
+            <td dir="ltr">{{ b.customer.phone|default:"---" }}</td>
+            <td>{{ b.invoice_count }}</td>
+            <td>{{ b.total_amount|floatformat:2 }} ج.م</td>
+            <td>{{ b.paid_amount|floatformat:2 }} ج.م</td>
+            <td class="font-weight-bold" style="color:{% if b.remaining > 0 %}#ef5350{% else %}#4caf50{% endif %};">
+              {{ b.remaining|floatformat:2 }} ج.م
+            </td>
+            <td>
+              <a href="{% url 'customer_balances' %}?customer={{ b.customer.id }}" class="btn btn-sm btn-dark" title="عرض فواتير العميل">
+                <i class="fas fa-file-invoice"></i>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" class="text-center text-muted py-4">لا توجد بيانات</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% if balance_data %}
+  <div class="card-footer" style="background:#111;border-top:1px solid #222;">
+    <div class="row text-center">
+      <div class="col-4">
+        <small class="text-muted">الإجمالي الكلي</small>
+        <div class="font-weight-bold" style="font-size:1.1rem;">{{ grand_total|floatformat:2 }} ج.م</div>
+      </div>
+      <div class="col-4">
+        <small class="text-muted">المدفوع الكلي</small>
+        <div class="font-weight-bold" style="color:#4caf50;font-size:1.1rem;">{{ grand_paid|floatformat:2 }} ج.م</div>
+      </div>
+      <div class="col-4">
+        <small class="text-muted">المتبقي الكلي</small>
+        <div class="font-weight-bold" style="color:var(--pb-red);font-size:1.1rem;">{{ grand_remaining|floatformat:2 }} ج.م</div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+{% if invoices %}
+<div class="card mt-3">
+  <div class="card-header">
+    <h3 class="card-title">فواتير العميل</h3>
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-sm table-hover mb-0">
+      <thead>
+        <tr>
+          <th>رقم الفاتورة</th>
+          <th>التاريخ</th>
+          <th>العميل</th>
+          <th>الإجمالي</th>
+          <th>المدفوع</th>
+          <th>الحالة</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inv in invoices %}
+        <tr>
+          <td><a href="{% url 'invoice_detail' inv.id %}">{{ inv.invoice_number }}</a></td>
+          <td>{{ inv.date|date:"Y-m-d" }}</td>
+          <td>{{ inv.customer.name|default:"---" }}</td>
+          <td>{{ inv.total_amount|floatformat:2 }}</td>
+          <td>{{ inv.paid_amount|floatformat:2 }}</td>
+          <td>{% if inv.is_cancelled %}<span class="badge badge-danger">ملغي</span>{% elif inv.status %}<span class="badge" style="background:{{ inv.status.color }};color:#fff;">{{ inv.status.name }}</span>{% else %}---{% endif %}</td>
+          <td><a href="{% url 'invoice_detail' inv.id %}" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj and page_obj.paginator.num_pages > 1 %}
+  <div class="card-footer">
+    <nav>{% include 'pagination.html' %}</nav>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}
