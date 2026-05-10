@@ -4,6 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{{ page_title|default:site_name }}{% endblock %} | {{ site_name }}</title>
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#dc143c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Play Baby CRM">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
@@ -654,6 +659,15 @@
             </ul>
           </li>
           {% endif %}
+          {% if user.is_authenticated %}
+          <li class="nav-header">التطبيق</li>
+          <li class="nav-item" id="install-app-item" style="display:none;">
+            <a href="#" class="nav-link" id="install-app-btn">
+              <i class="nav-icon fas fa-download"></i>
+              <p>تثبيت التطبيق</p>
+            </a>
+          </li>
+          {% endif %}
         </ul>
       </nav>
     </div>
@@ -743,6 +757,26 @@ $(document).ready(function() {
       });
     }
   });
+});
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/static/service-worker.js');
+  });
+}
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-app-item').style.display = '';
+});
+document.getElementById('install-app-btn').addEventListener('click', function(e) {
+  e.preventDefault();
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function() { deferredPrompt = null; });
+  }
 });
 </script>
 {% block extra_js %}{% endblock %}
