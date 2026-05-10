@@ -7,7 +7,8 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
-from django.utils.timezone import now
+from django.utils.timezone import now, make_aware
+from datetime import datetime
 from decimal import Decimal
 from django.db.models import Sum, Q
 from django.db.utils import OperationalError
@@ -296,6 +297,7 @@ def update_invoice_status(request, pk):
     if request.method == 'POST':
         status_id = request.POST.get('status')
         payment_id = request.POST.get('payment_method')
+        collected = request.POST.get('is_collected')
         if status_id:
             new_status = get_object_or_404(InvoiceStatus, pk=status_id)
             if invoice.status and new_status.order <= invoice.status.order:
@@ -305,6 +307,22 @@ def update_invoice_status(request, pk):
             invoice.status_id = status_id
         if payment_id:
             invoice.payment_method_id = payment_id
+        # Handle collection checkbox
+        collected_date_str = request.POST.get('collected_date', '').strip()
+        if collected == 'on':
+            if not invoice.is_collected:
+                invoice.is_collected = True
+                if collected_date_str:
+                    naive_date = datetime.strptime(collected_date_str, '%Y-%m-%d')
+                    invoice.collected_at = make_aware(naive_date)
+                else:
+                    invoice.collected_at = now()
+                invoice.collected_by = request.user
+        else:
+            if invoice.is_collected and invoice.collected_by == request.user:
+                invoice.is_collected = False
+                invoice.collected_at = None
+                invoice.collected_by = None
         invoice._changed_by = request.user
         invoice.save()
         messages.success(request, f'تم تحديث حالة الفاتورة {invoice.invoice_number} بنجاح')

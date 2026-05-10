@@ -314,8 +314,6 @@
     <i class="fas fa-times ml-1"></i> إلغاء
   </button>
   {% endif %}
-  {% elif is_shipping %}
-  <a href="{% url 'invoice_edit' invoice.id %}" class="btn btn-warning btn-sm">تعديل</a>
   {% endif %}
   <a href="{% url 'invoice_list' %}" class="btn btn-secondary btn-sm">العودة</a>
 </div>
@@ -625,6 +623,13 @@ document.querySelectorAll('.not-available-check').forEach(function(chk) {
           <option value="{{ p.id }}" {% if invoice.payment_method_id == p.id %}selected{% endif %}>{{ p.name }}</option>
           {% endfor %}
         </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;padding-top:18px;">
+        <input type="checkbox" name="is_collected" id="id_is_collected" style="width:18px;height:18px;"
+          {% if invoice.is_collected or invoice.remaining_amount == 0 %}checked{% endif %}>
+        <label for="id_is_collected" style="margin:0;font-size:13px;font-weight:600;white-space:nowrap;">تم تحصيل المبلغ</label>
+        <input type="date" name="collected_date" class="form-control form-control-sm" style="width:140px;"
+          value="{% if invoice.collected_at %}{{ invoice.collected_at|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}">
       </div>
       <div>
         <button type="submit" class="btn btn-success btn-sm">حفظ</button>

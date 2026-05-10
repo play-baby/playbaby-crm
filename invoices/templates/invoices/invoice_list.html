@@ -94,8 +94,6 @@
               {% if is_owner %}
               <a href="{% url 'invoice_delete' invoice.id %}" class="btn btn-danger btn-sm" style="border-radius:8px;">حذف</a>
               {% endif %}
-              {% elif is_shipping %}
-              <a href="{% url 'invoice_edit' invoice.id %}" class="btn btn-warning btn-sm" style="border-radius:8px;">تعديل</a>
               {% endif %}
               </div>
             </td>
