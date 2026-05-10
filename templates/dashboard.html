@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% block title %}لوحة التحكم{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item active">لوحة التحكم</li>
+{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-lg-3 col-6">
+    <div class="card stat-card">
+      <div class="card-body text-center py-4">
+        <div class="stat-icon bg-red-glow"><i class="fas fa-users"></i></div>
+        <h3 class="stat-number">{{ customers_count }}</h3>
+        <p class="stat-label">إجمالي العملاء</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-3 col-6">
+    <div class="card stat-card">
+      <div class="card-body text-center py-4">
+        <div class="stat-icon bg-red-glow"><i class="fas fa-box"></i></div>
+        <h3 class="stat-number">{{ products_count }}</h3>
+        <p class="stat-label">إجمالي المنتجات</p>
+        {% if low_stock > 0 %}
+        <span class="badge badge-warning">{{ low_stock }} منتجات منخفضة</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-3 col-6">
+    <div class="card stat-card">
+      <div class="card-body text-center py-4">
+        <div class="stat-icon bg-red-glow"><i class="fas fa-file-invoice"></i></div>
+        <h3 class="stat-number">{{ invoices_count }}</h3>
+        <p class="stat-label">إجمالي الفواتير</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-3 col-6">
+    <div class="card stat-card">
+      <div class="card-body text-center py-4">
+        <div class="stat-icon bg-red-glow"><i class="fas fa-money-bill-wave"></i></div>
+        <h3 class="stat-number">{{ total_revenue }} ج.م</h3>
+        <p class="stat-label">إجمالي الإيرادات</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">آخر العملاء</h3>
+        <div class="card-tools">
+          <a href="{% url 'customer_list' %}" class="btn btn-sm btn-outline-danger">عرض الكل</a>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>الاسم</th><th>رقم الهاتف</th><th>المشتريات</th></tr></thead>
+          <tbody>
+            {% for c in latest_customers %}
+            <tr><td><a href="{% url 'customer_detail' c.id %}">{{ c.name }}</a></td><td dir="ltr">{{ c.phone }}</td><td>{{ c.total_amount }} ج.م</td></tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center">لا يوجد عملاء</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">آخر الفواتير</h3>
+        <div class="card-tools">
+          <a href="{% url 'invoice_list' %}" class="btn btn-sm btn-outline-danger">عرض الكل</a>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>رقم الفاتورة</th><th>العميل</th><th>الإجمالي</th></tr></thead>
+          <tbody>
+            {% for inv in latest_invoices %}
+            <tr><td><a href="{% url 'invoice_detail' inv.id %}">{{ inv.invoice_number }}</a></td><td>{{ inv.customer.name|default:"---" }}</td><td>{{ inv.total_amount }} ج.م</td></tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center">لا يوجد فواتير</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-3">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">الملخص المالي</h3>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4 text-center">
+            <h5 class="text-muted">الإيرادات الكلية</h5>
+            <h3 class="text-success font-weight-bold">{{ total_revenue }} ج.م</h3>
+          </div>
+          <div class="col-md-4 text-center">
+            <h5 class="text-muted">المدفوع</h5>
+            <h3 class="text-info font-weight-bold">{{ total_paid }} ج.م</h3>
+          </div>
+          <div class="col-md-4 text-center">
+            <h5 class="text-muted">المتبقي</h5>
+            <h3 class="text-danger font-weight-bold">{{ outstanding }} ج.م</h3>
+          </div>
+        </div>
+        {% if is_owner %}
+        <hr style="border-color:#333;margin:20px 0;">
+        <div class="row">
+          <div class="col-md-3 text-center">
+            <h5 class="text-muted">صافي الربح</h5>
+            <h3 class="font-weight-bold" style="color:#ff9800;">{{ profit }} ج.م</h3>
+          </div>
+          <div class="col-md-3 text-center">
+            <h5 class="text-muted">إجمالي التكلفة</h5>
+            <h3 class="text-warning font-weight-bold">{{ total_cost }} ج.م</h3>
+          </div>
+          <div class="col-md-3 text-center">
+            <h5 class="text-muted">نسبة الربح</h5>
+            <h3 class="font-weight-bold" style="color:#00bcd4;">{{ profit_margin|floatformat:1 }}%</h3>
+          </div>
+          <div class="col-md-3 text-center">
+            <h5 class="text-muted">الفواتير غير المدفوعة</h5>
+            <h3 class="font-weight-bold" style="color:#e53935;">{{ unpaid_invoices_count }}</h3>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

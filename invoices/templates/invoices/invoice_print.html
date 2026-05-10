@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8">
+<title>فاتورة {{ invoice.invoice_number }}</title>
+<link href="https://fonts.googleapis.com/css2?family={{ invoice_template.font_family }}:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: '{{ invoice_template.font_family }}', sans-serif;
+    direction: rtl;
+    background: #fff;
+    color: #333;
+    padding: 2cm 1.5cm;
+    max-width: 21cm;
+    margin: 0 auto;
+  }
+  .inv-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 20px;
+    border-bottom: 3px {{ invoice_template.border_style }} {{ invoice_template.primary_color }};
+    margin-bottom: 25px;
+  }
+  .inv-brand { text-align: center; }
+  .inv-brand img { max-height: 60px; margin-bottom: 6px; }
+  .inv-brand h2 { color: {{ invoice_template.company_name_color }}; margin: 4px 0 2px; font-size: {{ invoice_template.header_size }}px; font-weight: 800; letter-spacing: 1px; }
+  .inv-brand p { margin: 0; font-size: 11px; color: #888; }
+  .inv-meta { text-align: left; }
+  .inv-meta h1 { font-size: 26px; font-weight: 800; margin: 0 0 10px; color: #333; }
+  .inv-meta table { font-size: 12.5px; }
+  .inv-meta td { padding: 2px 0; }
+  .inv-meta td:first-child { font-weight: 700; color: #888; padding-left: 10px; white-space: nowrap; }
+  .inv-meta td:last-child { direction: ltr; text-align: left; font-weight: 500; }
+  .inv-section-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: {{ invoice_template.primary_color }};
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .inv-customer { margin-bottom: 22px; }
+  .inv-customer-name { font-size: 16px; font-weight: 700; margin: 0 0 4px; }
+  .inv-customer-detail { font-size: 12.5px; color: #555; margin: 0 0 2px; }
+  .inv-customer-detail i { width: 16px; text-align: center; margin-left: 4px; color: #888; }
+  .inv-summary {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 22px;
+    font-size: 12.5px;
+  }
+  .inv-summary-item strong { font-weight: 700; }
+  .status-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 3px;
+    font-weight: 700;
+    font-size: 11px;
+  }
+  .inv-table-wrap { margin-bottom: 20px; }
+  .inv-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .inv-table thead th {
+    background: #f5f5f5;
+    color: #333;
+    font-weight: 800;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    font-size: 12px;
+    text-align: center;
+  }
+  .inv-table thead th:nth-child(2) { text-align: right; }
+  .inv-table tbody td {
+    padding: 9px 12px;
+    border: 1px solid #e0e0e0;
+    vertical-align: middle;
+  }
+  .inv-table tbody td:nth-child(1),
+  .inv-table tbody td:nth-child(3),
+  .inv-table tbody td:nth-child(4),
+  .inv-table tbody td:nth-child(5) { text-align: center; }
+  .inv-table tbody td:nth-child(2) { text-align: right; }
+  .inv-table tbody tr:last-child td { border-bottom: 2px solid #333; }
+  .inv-table tfoot td {
+    padding: 6px 12px;
+    border: none;
+    font-size: 13px;
+  }
+  .inv-table tfoot tr:first-child td { padding-top: 10px; }
+  .inv-table tfoot td:first-child { text-align: left; font-weight: 700; }
+  .inv-table tfoot td:last-child { text-align: center; font-weight: 800; width: 18%; }
+  .inv-total-row td { font-size: 16px; }
+  .inv-total-row td:last-child { color: {{ invoice_template.primary_color }}; }
+  .inv-notes {
+    margin-top: 18px;
+    padding: 12px 14px;
+    background: #fafafa;
+    border-right: 4px solid {{ invoice_template.primary_color }};
+    font-size: 12.5px;
+    border-radius: 0 6px 6px 0;
+  }
+  .inv-notes strong { font-weight: 700; color: #333; }
+  .inv-footer {
+    text-align: center;
+    padding-top: 18px;
+    margin-top: 30px;
+    border-top: 2px solid #e0e0e0;
+  }
+  .inv-footer p:first-child {
+    font-size: 16px;
+    font-weight: 800;
+    color: {{ invoice_template.primary_color }};
+    margin: 0 0 4px;
+  }
+  .inv-footer p:last-child {
+    font-size: 10px;
+    color: #888;
+    margin: 0;
+  }
+  {{ invoice_template.custom_css|safe }}
+  @media print {
+    body { padding: 1.5cm; max-width: none; margin: 0; }
+    .inv-table thead th { background: #f5f5f5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .status-badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="inv-header">
+    <div class="inv-brand">
+      {% if invoice_template.show_logo and site_logo %}
+      <img src="{{ site_logo }}" alt="Play Baby">
+      {% endif %}
+      <h2>Play Baby Lingerie</h2>
+      <p>{{ site_name }}</p>
+    </div>
+    <div class="inv-meta">
+      <h1>{{ invoice_template.invoice_title }}</h1>
+      <table>
+        <tr><td>رقم الفاتورة</td><td>{{ invoice.invoice_number }}</td></tr>
+        <tr><td>تاريخ الطلب</td><td>{{ invoice.date|date:"Y-m-d" }}</td></tr>
+        <tr><td>تاريخ الطباعة</td><td>{% now "Y-m-d" %}</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="inv-customer">
+    <div class="inv-section-title">بيانات العميل</div>
+    {% if invoice.customer %}
+    <p class="inv-customer-name">{{ invoice.customer.name }}</p>
+    {% if invoice.customer.address %}<p class="inv-customer-detail"><i class="fas fa-map-marker-alt"></i> {{ invoice.customer.address }}</p>{% endif %}
+    {% else %}
+    <p style="color:#888;font-size:13px;">---</p>
+    {% endif %}
+  </div>
+
+  <div class="inv-summary">
+    <div class="inv-summary-item"><strong>حالة الطلب:</strong>
+      {% if invoice.status %}
+      <span class="status-badge" style="background:{{ invoice.status.color }};color:#fff;">{{ invoice.status.name }}</span>
+      {% else %}<span style="color:#888;">---</span>{% endif %}
+    </div>
+    <div class="inv-summary-item"><strong>طريقة الدفع:</strong> {{ invoice.payment_method.name|default:"---" }}</div>
+    <div class="inv-summary-item"><strong>المدفوع:</strong> {{ invoice.paid_amount }} / {{ invoice.total_amount }} ج.م</div>
+    {% if invoice.created_by %}<div class="inv-summary-item"><strong>تم بواسطة:</strong> {{ invoice.created_by.username }}</div>{% endif %}
+  </div>
+
+  <div class="inv-table-wrap">
+    <table class="inv-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>المنتج</th>
+          <th>الكمية</th>
+          <th>سعر الوحدة</th>
+          <th>الإجمالي</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in invoice.items.all %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ item.product_name }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>{{ item.unit_price }} ج.م</td>
+          <td>{{ item.total }} ج.م</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">لا توجد عناصر</td></tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr class="inv-total-row">
+          <td colspan="4">الإجمالي الكلي</td>
+          <td>{{ invoice.total_amount }} ج.م</td>
+        </tr>
+        <tr>
+          <td colspan="4">المدفوع</td>
+          <td>{{ invoice.paid_amount }} ج.م</td>
+        </tr>
+        <tr>
+          <td colspan="4">المتبقي</td>
+          <td>{{ invoice.remaining_amount }} ج.م</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  {% if invoice.notes %}
+  <div class="inv-notes">
+    <strong>ملاحظات:</strong>
+    <p style="margin:4px 0 0;">{{ invoice.notes }}</p>
+  </div>
+  {% endif %}
+
+  <div class="inv-footer">
+    {% if invoice_template.show_footer %}
+    <p>{{ invoice_template.footer_message }}</p>
+    {% endif %}
+    <p>{{ site_name }} &copy; {{ current_year }}</p>
+  </div>
+
+  <script>
+    window.onload = function() { window.print(); };
+  </script>
+</body>
+</html>

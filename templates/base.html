@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ page_title|default:site_name }}{% endblock %} | {{ site_name }}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --pb-red: #dc143c;
+      --pb-red-dark: #a01030;
+      --pb-red-light: #ff1744;
+      --pb-red-glow: rgba(220,20,60,0.3);
+      --pb-black: #0a0a0a;
+      --pb-black-2: #111;
+      --pb-black-3: #1a1a1a;
+      --pb-gray: #2a2a2a;
+      --pb-text: #e0e0e0;
+      --pb-card: #141414;
+    }
+    * { font-family: 'Tajawal', sans-serif !important; }
+    body { background: #0d0d0d; overflow-x: hidden; }
+
+    /* === RTL SIDEBAR ON RIGHT === */
+    .main-sidebar { right: 0 !important; left: auto !important; }
+    .content-wrapper, .main-footer, .main-header {
+      margin-left: 0 !important;
+      margin-right: 230px !important;
+      transition: margin-right 0.3s ease;
+    }
+    .sidebar-collapse .content-wrapper,
+    .sidebar-collapse .main-footer,
+    .sidebar-collapse .main-header { margin-right: 4.6rem !important; }
+
+    /* ===== MOBILE RESPONSIVE (TABLETS) ===== */
+    @media (max-width: 991.98px) {
+      .content-wrapper, .main-footer, .main-header { margin-right: 0 !important; }
+      .content-header h1 { font-size: 1.1rem; }
+      .content-header .container-fluid { padding-right: 10px; padding-left: 10px; }
+      .stat-number { font-size: 1.3rem; }
+      .card-header .card-title { font-size: 0.9rem; }
+      .card-header { padding: 0.75rem 1rem !important; }
+      .table { font-size: 0.78rem; }
+      .btn { padding: 6px 12px; font-size: 0.78rem; white-space: nowrap; }
+      .breadcrumb { font-size: 0.75rem; }
+      .main-sidebar { width: 220px; }
+      .nav-sidebar .nav-link p { font-size: 0.7rem; }
+      .nav-sidebar .nav-link { padding: 0.6rem 0.3rem !important; margin: 1px 6px; }
+      .card-body { padding: 0.9rem; }
+      .content { padding: 0 0.3rem !important; }
+      .container-fluid { padding-right: 10px !important; padding-left: 10px !important; }
+      .table-responsive { border: 0; margin: 0; }
+      .input-group { flex-wrap: nowrap; }
+      .input-group .form-control { min-width: 0; }
+      .navbar-nav .nav-link { padding: 0.5rem 0.6rem !important; }
+    }
+
+    /* ===== MOBILE RESPONSIVE (PHONES) ===== */
+    @media (max-width: 575.98px) {
+      .content-header h1 { font-size: 0.95rem; }
+      .content-header .container-fluid { padding-right: 5px !important; padding-left: 5px !important; }
+      .stat-number { font-size: 1.1rem; }
+      .stat-icon { width: 45px; height: 45px; font-size: 1.1rem; margin-bottom: 10px; }
+      .card-header .card-title { font-size: 0.82rem; }
+      .card-header { padding: 0.6rem 0.75rem !important; }
+      .card-body { padding: 0.65rem; }
+      .card { border-radius: 12px; }
+      .table { font-size: 0.7rem; }
+      .table td, .table th { padding: 6px 8px !important; }
+      .btn { padding: 5px 10px; font-size: 0.7rem; border-radius: 8px; }
+      .breadcrumb { font-size: 0.7rem; }
+      .main-sidebar { width: 200px; }
+      .content { padding: 0 0.2rem !important; }
+      .container-fluid { padding-right: 5px !important; padding-left: 5px !important; }
+      .row { margin-right: -5px; margin-left: -5px; }
+      .row > [class*="col-"] { padding-right: 5px; padding-left: 5px; }
+      .table > :not(caption) > * > * { padding: 4px 6px !important; }
+      .btn-sm { padding: 5px 8px; font-size: 0.7rem; min-height: 32px; }
+      .card-tools .btn { padding: 3px 8px; font-size: 0.7rem; }
+      .navbar-nav .nav-link { padding: 0.4rem 0.5rem !important; }
+      .navbar-nav .nav-link i { font-size: 0.95rem; }
+      .btn-group { gap: 2px; }
+      .btn-group .btn { border-radius: 8px !important; margin: 0 !important; border: none !important; }
+      .table td:last-child .btn-group { display: flex; gap: 3px; }
+      .main-header .navbar-nav { flex-direction: row; }
+      .content-header .breadcrumb { margin-bottom: 0; }
+      .content-wrapper { overflow-x: hidden; }
+    }
+
+    /* ===== SIDEBAR ===== */
+    .main-sidebar {
+      background: linear-gradient(180deg, #050505 0%, #0a0a0a 100%) !important;
+      border-left: 1px solid #1a1a1a;
+      width: 230px;
+    }
+    .brand-link {
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      background: #050505 !important;
+      border-bottom: 2px solid var(--pb-red);
+      padding: 1rem 0.5rem !important;
+    }
+    .brand-link .brand-text {
+      color: #fff !important;
+      font-weight: 800;
+      font-size: 1rem;
+      background: linear-gradient(135deg, var(--pb-red), var(--pb-red-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .nav-sidebar .nav-header {
+      color: rgba(255,255,255,0.3);
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-align: center;
+      padding: 0.8rem 0.5rem 0.3rem !important;
+    }
+    .nav-sidebar .nav-item { text-align: center; }
+    .nav-sidebar .nav-link {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      flex-direction: row;
+      padding: 0.65rem 0.8rem !important;
+      margin: 2px 8px;
+      border-radius: 12px;
+      gap: 10px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .nav-sidebar .nav-link::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0; width: 100%; height: 100%;
+      background: linear-gradient(135deg, var(--pb-red), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .nav-sidebar .nav-link:hover::before { opacity: 0.1; }
+    .nav-sidebar .nav-link:hover {
+      background: rgba(220,20,60,0.1) !important;
+      transform: translateY(-1px);
+    }
+    .nav-sidebar .nav-link.active {
+      background: linear-gradient(135deg, var(--pb-red), var(--pb-red-light)) !important;
+      box-shadow: 0 4px 20px var(--pb-red-glow);
+    }
+    .nav-sidebar .nav-link.active::before { opacity: 0; }
+    .nav-sidebar .nav-icon {
+      position: static !important;
+      font-size: 1.15rem;
+      margin: 0 !important;
+      width: 24px !important;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .nav-sidebar .nav-link p {
+      margin: 0 !important;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-align: right;
+    }
+    .sidebar-collapse .main-sidebar { width: 4.6rem; }
+    .sidebar-collapse .nav-sidebar .nav-link {
+      padding: 0.7rem 0 !important;
+      flex-direction: column;
+      justify-content: center !important;
+    }
+    .sidebar-collapse .brand-text,
+    .sidebar-collapse .nav-sidebar .nav-header,
+    .sidebar-collapse .nav-sidebar .nav-link p,
+    .sidebar-collapse .nav-treeview { display: none; }
+    .sidebar-collapse .nav-sidebar .nav-icon { font-size: 1.4rem; }
+
+    /* Treeview fixes */
+    .nav-sidebar .nav-treeview {
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      margin: 2px 8px;
+      padding: 4px 0;
+    }
+    .nav-sidebar .nav-treeview .nav-link {
+      padding: 0.45rem 0.8rem !important;
+      margin: 1px 4px;
+      border-radius: 8px;
+      flex-direction: row;
+      gap: 10px;
+      justify-content: flex-start !important;
+    }
+    .nav-sidebar .nav-treeview .nav-link .nav-icon {
+      font-size: 0.8rem;
+      width: 24px !important;
+      text-align: center;
+    }
+    .nav-sidebar .nav-treeview .nav-link p {
+      font-size: 0.72rem;
+      text-align: right;
+    }
+    .nav-sidebar .nav-link .fa-angle-left {
+      margin-right: auto !important;
+      margin-left: 0 !important;
+      transition: transform 0.3s;
+      font-size: 0.7rem;
+    }
+    .nav-sidebar .nav-item.has-treeview.open .nav-link .fa-angle-left {
+      transform: rotate(-90deg);
+    }
+
+    /* === NAVBAR === */
+    .main-header.navbar {
+      background: linear-gradient(90deg, #0a0a0a, #111) !important;
+      border-bottom: 1px solid #222;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.5);
+      padding: 0 8px;
+    }
+    .main-header .nav-link {
+      color: rgba(255,255,255,0.7) !important;
+      font-weight: 500;
+      padding: 0.5rem 0.8rem !important;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .main-header .nav-link:hover {
+      color: var(--pb-red) !important;
+      background: rgba(220,20,60,0.08);
+    }
+    .main-header .nav-link.active-nav {
+      color: var(--pb-red) !important;
+      background: rgba(220,20,60,0.1);
+    }
+    .navbar-nav .nav-item-icon {
+      display: none;
+    }
+    .nav-mobile-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      transition: all 0.2s;
+    }
+    .nav-mobile-icon:hover {
+      background: rgba(220,20,60,0.15);
+      color: var(--pb-red) !important;
+    }
+    @media (max-width: 575.98px) {
+      .navbar-nav .nav-item-text { display: none; }
+      .navbar-nav .nav-item-icon { display: inline; }
+      .main-header .nav-link { padding: 0.3rem 0.4rem !important; }
+      .navbar-nav { flex-direction: row; align-items: center; }
+    }
+    .dropdown-menu {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    }
+    .dropdown-item { color: var(--pb-text); border-radius: 8px; }
+    .dropdown-item:hover { background: rgba(220,20,60,0.15); color: var(--pb-red); }
+
+    /* === CONTENT === */
+    .content-wrapper { background: #0d0d0d !important; }
+    .content-header h1 {
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      font-size: 1.3rem;
+    }
+    .breadcrumb { background: transparent; margin: 0; }
+    .breadcrumb-item { color: rgba(255,255,255,0.5); }
+    .breadcrumb-item a { color: var(--pb-red); }
+    .breadcrumb-item + .breadcrumb-item::before { color: rgba(255,255,255,0.3); }
+    .content { padding: 0 0.5rem !important; min-height: 100px; }
+
+    /* === CARDS === */
+    .card {
+      background: var(--pb-card);
+      border: 1px solid #222;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    .card-header {
+      background: linear-gradient(90deg, #1a1a1a, #141414) !important;
+      border-bottom: 2px solid var(--pb-red);
+      padding: 0.9rem 1.25rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .card-title { margin: 0; font-weight: 700; color: #fff; }
+    .card-body { color: var(--pb-text); }
+    .card-footer { background: #1a1a1a; border-top: 1px solid #222; }
+
+    /* === STAT CARDS (DASHBOARD) === */
+    .stat-card .card-body {
+      background: linear-gradient(135deg, #141414, #1a1a1a);
+    }
+    .stat-card:hover { transform: translateY(-5px); box-shadow: 0 8px 30px rgba(220,20,60,0.2); }
+    .stat-card { transition: all 0.3s ease; }
+    .stat-icon {
+      width: 55px; height: 55px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 12px;
+      font-size: 1.4rem;
+      color: #fff;
+    }
+    .bg-red-glow {
+      background: linear-gradient(135deg, var(--pb-red), var(--pb-red-light));
+      box-shadow: 0 4px 20px var(--pb-red-glow);
+    }
+    .stat-number {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 5px;
+    }
+    .stat-label { color: rgba(255,255,255,0.6); font-weight: 500; margin: 0; font-size: 0.85rem; }
+
+    /* === TABLES === */
+    .table { color: var(--pb-text); margin: 0; }
+    .table th {
+      background: #1a1a1a !important;
+      color: #fff !important;
+      font-weight: 700;
+      border-bottom: 2px solid var(--pb-red);
+      border-top: none;
+      white-space: nowrap;
+    }
+    .table td { border-color: #222; vertical-align: middle; }
+    .table-striped tbody tr:nth-of-type(odd) { background: rgba(220,20,60,0.03); }
+    .table-hover tbody tr:hover { background: rgba(220,20,60,0.08); }
+    .table-responsive {
+      border-radius: 0;
+      -webkit-overflow-scrolling: touch;
+    }
+    @media (max-width: 575.98px) {
+      .table-responsive table { min-width: 600px; }
+    }
+
+    /* === BUTTONS === */
+    .btn {
+      border-radius: 10px;
+      font-weight: 600;
+      padding: 8px 16px;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    .btn-success { background: linear-gradient(135deg, var(--pb-red), var(--pb-red-light)); border: none; }
+    .btn-success:hover { transform: translateY(-2px); box-shadow: 0 5px 20px var(--pb-red-glow); }
+    .btn-dark { background: #222; border: 1px solid #333; color: #fff; }
+    .btn-dark:hover { background: #333; border-color: var(--pb-red); }
+    .btn-info { background: linear-gradient(135deg, #0097a7, #00bcd4); border: none; }
+    .btn-warning { background: linear-gradient(135deg, #e65100, #ff9800); border: none; color: #fff; }
+    .btn-danger { background: linear-gradient(135deg, #c62828, #e53935); border: none; }
+    .btn-secondary { background: #333; border: none; }
+
+
+    /* === LINKS === */
+    a { color: var(--pb-red); transition: color 0.2s; }
+    a:hover { color: var(--pb-red-light); text-decoration: none; }
+
+    /* === BADGES === */
+    .badge-success { background: var(--pb-red); }
+    .badge-warning { background: #e65100; }
+
+    /* === PAGINATION === */
+    .page-link {
+      background: #1a1a1a;
+      border-color: #333;
+      color: var(--pb-text);
+      padding: 0.4rem 0.75rem;
+    }
+    .page-item.active .page-link { background: var(--pb-red); border-color: var(--pb-red); }
+    .page-item .page-link:hover { background: #333; color: var(--pb-red); }
+    .pagination { flex-wrap: wrap; }
+
+    /* === FORMS === */
+    .form-control {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      color: #fff;
+      border-radius: 10px;
+      padding: 10px 15px;
+      font-size: 0.9rem;
+    }
+    .form-control:focus {
+      background: #222;
+      border-color: var(--pb-red);
+      box-shadow: 0 0 0 3px var(--pb-red-glow);
+      color: #fff;
+    }
+    .form-control::placeholder { color: rgba(255,255,255,0.3); }
+    label { color: rgba(255,255,255,0.8); font-weight: 600; }
+    .custom-file-label {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      color: rgba(255,255,255,0.5);
+    }
+    .custom-file-label::after {
+      content: "تصفح";
+      background: var(--pb-red);
+      color: #fff;
+      right: auto;
+      left: 0;
+    }
+    select.form-control option { background: #1a1a1a; color: #fff; }
+
+    /* === ALERTS === */
+    .alert-success { background: rgba(220,20,60,0.15); border: 1px solid rgba(220,20,60,0.3); color: var(--pb-red-light); }
+    .alert-danger { background: rgba(198,40,40,0.15); border: 1px solid rgba(198,40,40,0.3); color: #ef5350; }
+
+    /* === MODAL === */
+    .modal-content {
+      background: #141414;
+      border: 1px solid #333;
+      border-radius: 16px;
+    }
+    .modal-header { border-bottom: 2px solid var(--pb-red); padding: 1rem; }
+    .modal-footer { border-top: 1px solid #222; padding: 0.8rem; }
+    .modal-title { font-weight: 700; }
+    .close { color: #fff; text-shadow: none; opacity: 0.7; }
+    .close:hover { color: var(--pb-red); opacity: 1; }
+    .modal-dialog { margin: 0.5rem; }
+
+    /* === FOOTER === */
+    .main-footer {
+      background: #0a0a0a !important;
+      color: rgba(255,255,255,0.5);
+      border-top: 1px solid #1a1a1a;
+      font-size: 0.8rem;
+      padding: 0.8rem 1rem !important;
+    }
+
+    /* === MISC === */
+    .text-muted { color: rgba(255,255,255,0.4) !important; }
+    .card-tools { display: flex; align-items: center; gap: 4px; }
+    .card-tools .btn { padding: 4px 10px; font-size: 0.8rem; }
+    .btn-group .btn { border-radius: 10px !important; }
+    .btn-group .btn:not(:last-child) { border-left: 1px solid #444; margin-left: 0; }
+    .btn-group { flex-wrap: wrap; }
+    hr { border-color: #222; }
+
+    /* RTL utilities */
+    .float-left { float: right !important; }
+    .float-sm-left { float: right !important; }
+    .ml-auto { margin-right: auto !important; margin-left: 0 !important; }
+    .mr-auto { margin-left: auto !important; margin-right: 0 !important; }
+    .ml-1 { margin-right: 0.25rem !important; margin-left: 0 !important; }
+    .mr-1 { margin-left: 0.25rem !important; margin-right: 0 !important; }
+    .ml-2 { margin-right: 0.5rem !important; margin-left: 0 !important; }
+    .mr-2 { margin-left: 0.5rem !important; margin-right: 0 !important; }
+    .ml-3 { margin-right: 1rem !important; margin-left: 0 !important; }
+    .mr-3 { margin-left: 1rem !important; margin-right: 0 !important; }
+    .pl-0 { padding-right: 0 !important; padding-left: initial !important; }
+    .pr-0 { padding-left: 0 !important; padding-right: initial !important; }
+    .input-group > .input-group-append > .btn { border-radius: 0.25rem 0 0 0.25rem !important; }
+    .input-group > .input-group-prepend > .input-group-text { border-radius: 0 0.25rem 0.25rem 0 !important; }
+    .input-group > .input-group-prepend { margin-right: 0; }
+    .input-group-append { margin-right: -1px; }
+    .input-group-prepend { margin-left: -1px; }
+    .input-group > .form-control:not(:first-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+    .input-group > .form-control:not(:last-child) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+    select.form-control { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23ffffff' d='M2 0L0 2h4zm0 5L0 3h4z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: left 0.75rem center; background-size: 8px 10px; -webkit-appearance: none; -moz-appearance: none; appearance: none; padding-left: 2rem; }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="hold-transition sidebar-mini layout-fixed rtl">
+<div class="wrapper">
+
+  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+      </li>
+      <li class="nav-item d-sm-none">
+        <a href="{% url 'home' %}" class="nav-link" title="الرئيسية">
+          <span class="nav-mobile-icon"><i class="fas fa-chart-pie"></i></span>
+        </a>
+      </li>
+      <li class="nav-item d-sm-none">
+        <a href="{% url 'customer_list' %}" class="nav-link" title="العملاء">
+          <span class="nav-mobile-icon"><i class="fas fa-users"></i></span>
+        </a>
+      </li>
+      <li class="nav-item d-sm-none">
+        <a href="{% url 'product_list' %}" class="nav-link" title="المنتجات">
+          <span class="nav-mobile-icon"><i class="fas fa-box"></i></span>
+        </a>
+      </li>
+      <li class="nav-item d-sm-none">
+        <a href="{% url 'invoice_list' %}" class="nav-link" title="الفواتير">
+          <span class="nav-mobile-icon"><i class="fas fa-file-invoice"></i></span>
+        </a>
+      </li>
+    </ul>
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item d-none d-sm-inline-block">
+        <a href="{% url 'home' %}" class="nav-link {% if request.path == '/' %}active-nav{% endif %}">
+          <i class="fas fa-chart-pie ml-1"></i>
+          <span class="nav-item-text">الرئيسية</span>
+        </a>
+      </li>
+      <li class="nav-item d-none d-sm-inline-block">
+        <a href="{% url 'customer_list' %}" class="nav-link {% if request.resolver_match.app_name == 'customers' %}active-nav{% endif %}">
+          <i class="fas fa-users ml-1"></i>
+          <span class="nav-item-text">العملاء</span>
+        </a>
+      </li>
+      <li class="nav-item d-none d-sm-inline-block">
+        <a href="{% url 'product_list' %}" class="nav-link {% if request.resolver_match.app_name == 'products' %}active-nav{% endif %}">
+          <i class="fas fa-box ml-1"></i>
+          <span class="nav-item-text">المنتجات</span>
+        </a>
+      </li>
+      <li class="nav-item d-none d-sm-inline-block">
+        <a href="{% url 'invoice_list' %}" class="nav-link {% if request.resolver_match.app_name == 'invoices' %}active-nav{% endif %}">
+          <i class="fas fa-file-invoice ml-1"></i>
+          <span class="nav-item-text">الفواتير</span>
+        </a>
+      </li>
+      <li class="nav-item dropdown user-menu">
+        <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+          <i class="fas fa-user-circle"></i>
+          <span class="d-none d-md-inline mr-2">{{ user.username }}</span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-left">
+          <div class="dropdown-divider"></div>
+          <form method="post" action="{% url 'logout' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="dropdown-item" style="background:none;border:none;cursor:pointer;">
+              <i class="fas fa-sign-out-alt ml-2"></i> تسجيل الخروج
+            </button>
+          </form>
+        </div>
+      </li>
+    </ul>
+  </nav>
+
+  <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <a href="{% url 'home' %}" class="brand-link">
+      {% if site_logo %}
+      <img src="{{ site_logo }}" alt="Play Baby" style="max-height:38px;max-width:90%;border-radius:6px;">
+      {% else %}
+      <span class="brand-text">{{ site_short_name }}</span>
+      {% endif %}
+    </a>
+    <div class="sidebar">
+      <nav class="mt-2">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+          <li class="nav-header">القائمة الرئيسية</li>
+          <li class="nav-item">
+            <a href="{% url 'home' %}" class="nav-link {% if request.path == '/' %}active{% endif %}">
+              <i class="nav-icon fas fa-chart-pie"></i>
+              <p>لوحة التحكم</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{% url 'customer_list' %}" class="nav-link {% if request.resolver_match.app_name == 'customers' %}active{% endif %}">
+              <i class="nav-icon fas fa-users"></i>
+              <p>العملاء</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{% url 'product_list' %}" class="nav-link {% if request.resolver_match.app_name == 'products' %}active{% endif %}">
+              <i class="nav-icon fas fa-box"></i>
+              <p>المنتجات</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{% url 'invoice_list' %}" class="nav-link {% if request.resolver_match.app_name == 'invoices' %}active{% endif %}">
+              <i class="nav-icon fas fa-file-invoice"></i>
+              <p>الفواتير</p>
+            </a>
+          </li>
+          {% if is_owner or user.is_superuser %}
+          <li class="nav-header">الإعدادات</li>
+          <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fas fa-cog"></i>
+              <p>
+                لوحة المشرف
+                <i class="fas fa-angle-left mr-1"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="{% url 'invoice_status_list' %}" class="nav-link">
+                  <i class="nav-icon fas fa-tags"></i>
+                  <p>حالات الطلبات</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{% url 'payment_method_list' %}" class="nav-link">
+                  <i class="nav-icon fas fa-credit-card"></i>
+                  <p>طرق الدفع</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{% url 'invoice_template_edit' %}" class="nav-link">
+                  <i class="nav-icon fas fa-paint-brush"></i>
+                  <p>تصميم الفاتورة</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{% url 'admin:index' %}" class="nav-link">
+                  <i class="nav-icon fas fa-shield-alt"></i>
+                  <p>لوحة المشرف</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+  </aside>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>{% block page_title %}{{ page_title }}{% endblock %}</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-left">
+              {% block breadcrumb %}
+              <li class="breadcrumb-item"><a href="{% url 'home' %}">الرئيسية</a></li>
+              {% endblock %}
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+        {% if messages %}
+          {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="إغلاق">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+      </div>
+    </section>
+  </div>
+
+  <footer class="main-footer">
+    <div class="float-left d-none d-sm-block">
+      <b>الإصدار</b> 1.0
+    </div>
+    <strong>&copy; {{ current_year }} <span style="color: var(--pb-red);">{{ site_name }}</span></strong>
+  </footer>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

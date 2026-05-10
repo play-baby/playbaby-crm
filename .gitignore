@@ -1,0 +1,11 @@
+*.pyc
+__pycache__/
+*.sqlite3
+media/
+staticfiles/
+venv/
+.env
+.DS_Store
+*.log
+start_server.py
+run.bat

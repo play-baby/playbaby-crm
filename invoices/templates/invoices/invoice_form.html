@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'invoice_list' %}">الفواتير</a></li>
+<li class="breadcrumb-item active">{{ page_title }}</li>
+{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">{{ page_title }}</h3>
+  </div>
+  <form method="post" id="invoiceForm">
+    {% csrf_token %}
+    {% if not is_shipping %}{{ item_formset.management_form }}{% endif %}
+    <div class="card-body">
+      <div class="row">
+        {% if not is_shipping %}
+        <div class="col-6 col-md-3">
+          <div class="form-group">
+            <label>{{ form.invoice_number.label }}</label>
+            {{ form.invoice_number }}
+            {% if form.invoice_number.errors %}<small class="text-danger">{{ form.invoice_number.errors.0 }}</small>{% endif %}
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="form-group">
+            <label>{{ form.customer.label }}</label>
+            {{ form.customer }}
+          </div>
+        </div>
+        <div class="col-4 col-md-2">
+          <div class="form-group">
+            <label>{{ form.date.label }}</label>
+            {{ form.date }}
+          </div>
+        </div>
+        {% else %}
+        <div class="col-md-6">
+          <p><strong>رقم الفاتورة:</strong> {{ form.instance.invoice_number }}</p>
+          <p><strong>العميل:</strong> {{ form.instance.customer.name|default:"---" }}</p>
+          <p><strong>التاريخ:</strong> {{ form.instance.date|date:"Y-m-d" }}</p>
+        </div>
+        {% endif %}
+        <div class="col-4 col-md-2">
+          <div class="form-group">
+            <label>{{ form.status.label }}</label>
+            {{ form.status }}
+          </div>
+        </div>
+        <div class="col-4 col-md-2">
+          <div class="form-group">
+            <label>{{ form.payment_method.label }}</label>
+            {{ form.payment_method }}
+          </div>
+        </div>
+      </div>
+
+      {% if not is_shipping %}
+      <h5 class="mt-4 mb-3" style="color:#fff;font-size:0.95rem;">عناصر الفاتورة</h5>
+      <div class="table-responsive">
+        <table class="table table-sm" id="itemsTable">
+          <thead>
+            <tr>
+              <th style="width:5%;" class="d-none d-sm-table-cell">#</th>
+              <th style="width:22%;">المنتج</th>
+              <th style="width:18%;" class="d-none d-md-table-cell">اسم المنتج</th>
+              <th style="width:12%;">الكمية</th>
+              <th style="width:15%;" class="d-none d-sm-table-cell">سعر الوحدة</th>
+              <th style="width:12%;">الإجمالي</th>
+              <th style="width:5%;"></th>
+            </tr>
+          </thead>
+          <tbody id="itemsBody">
+            {% for f in item_formset %}
+            <tr class="item-row" data-prefix="{{ f.prefix }}" {% if f.instance.pk %}data-orig-qty="{{ f.instance.quantity }}"{% endif %}>
+              <td class="row-num d-none d-sm-table-cell">{{ forloop.counter }}</td>
+              <td>
+                {{ f.id }}
+                {{ f.product }}
+                {% if f.product.errors %}<small class="text-danger d-block">{{ f.product.errors.0 }}</small>{% endif %}
+              </td>
+              <td class="d-none d-md-table-cell">
+                {{ f.product_name }}
+                {% if f.product_name.errors %}<small class="text-danger d-block">{{ f.product_name.errors.0 }}</small>{% endif %}
+              </td>
+              <td>
+                {{ f.quantity }}
+                {% if f.quantity.errors %}<small class="text-danger d-block">{{ f.quantity.errors.0 }}</small>{% endif %}
+              </td>
+              <td class="d-none d-sm-table-cell">
+                {{ f.unit_price }}
+                {% if f.unit_price.errors %}<small class="text-danger d-block">{{ f.unit_price.errors.0 }}</small>{% endif %}
+              </td>
+              <td>
+                {{ f.total }}
+              </td>
+              <td class="text-center">
+                {{ f.DELETE }}
+                <button type="button" class="btn btn-sm btn-outline-danger remove-row" {% if forloop.first %}disabled{% endif %}>
+                  <i class="fas fa-times"></i>
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="7">
+                <button type="button" class="btn btn-sm btn-dark" id="addRow">
+                  <i class="fas fa-plus ml-1"></i> إضافة عنصر
+                </button>
+              </td>
+            </tr>
+            <tr class="font-weight-bold" style="font-size:1.2rem;">
+              <td colspan="5" class="text-left">الإجمالي الكلي</td>
+              <td id="grandTotal">0.00 ج.م</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      {% endif %}
+
+      <div class="row mt-3">
+        <div class="col-6 col-md-4">
+          <div class="form-group">
+            <label>{{ form.paid_amount.label }}</label>
+            {{ form.paid_amount }}
+            {% if form.paid_amount.errors %}<small class="text-danger">{{ form.paid_amount.errors.0 }}</small>{% endif %}
+          </div>
+        </div>
+        {% if not is_shipping %}
+        <div class="col-6 col-md-8">
+          <div class="form-group">
+            <label>{{ form.notes.label }}</label>
+            {{ form.notes }}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="card-footer text-left">
+      <a href="{% url 'invoice_list' %}" class="btn btn-secondary btn-sm">إلغاء</a>
+      <button type="submit" class="btn btn-success btn-sm">
+        <i class="fas fa-save ml-1"></i> {% if is_shipping %}تحديث الحالة{% else %}حفظ{% endif %}
+      </button>
+    </div>
+  </form>
+</div>
+
+{% endblock %}
+{% block extra_js %}
+<script>
+var products = [
+  {% for p in products %}
+  {id: {{ p.id }}, name: "{{ p.name|escapejs }}", price: "{{ p.price }}", stock: {{ p.quantity }}},
+  {% endfor %}
+];
+
+function onProductChange(sel) {
+  var row = $(sel).closest('tr');
+  var id = parseInt(sel.value);
+  var prod = products.find(function(p) { return p.id === id; });
+  if (prod) {
+    row.find('.product-name').val(prod.name);
+    row.find('.item-price').val(prod.price);
+    var stock = prod.stock;
+    var origQty = parseInt(row.data('orig-qty')) || 0;
+    var available = stock + origQty;
+    var qtyInput = row.find('.item-qty');
+    row.find('.stock-warning').remove();
+    qtyInput.prop('readonly', false).attr('max', available);
+    if (stock <= 0 && origQty <= 0) {
+      row.find('.product-select').closest('td').append(
+        '<div class="stock-warning text-warning small mt-1">غير متوفر في المخزون</div>'
+      );
+      qtyInput.val(0).prop('readonly', true);
+    } else if (available <= 5) {
+      row.find('.product-select').closest('td').append(
+        '<div class="stock-warning text-warning small mt-1">الحد الأقصى: ' + available + '</div>'
+      );
+    }
+  }
+  calcRow(sel);
+}
+
+function calcRow(el) {
+  var row = $(el).closest('tr');
+  var qtyInput = row.find('.item-qty');
+  var maxQty = parseInt(qtyInput.attr('max'));
+  var qty = parseFloat(qtyInput.val()) || 0;
+  if (maxQty > 0 && qty > maxQty) {
+    qtyInput.val(maxQty);
+    qty = maxQty;
+  }
+  var price = parseFloat(row.find('.item-price').val()) || 0;
+  var total = qty * price;
+  row.find('.item-total').val(total.toFixed(2));
+  calcGrandTotal();
+}
+
+function calcGrandTotal() {
+  var gt = 0;
+  $('.item-total').each(function() {
+    gt += parseFloat($(this).val()) || 0;
+  });
+  $('#grandTotal').text(gt.toFixed(2) + ' ج.م');
+}
+
+$(document).ready(function() {
+  calcGrandTotal();
+
+  $('#addRow').click(function() {
+    var totalForms = $('#id_items-TOTAL_FORMS');
+    var idx = parseInt(totalForms.val());
+    var template = $('#itemsBody tr:first').clone();
+    template.find('input, select').each(function() {
+      var name = $(this).attr('name');
+      if (name) {
+        name = name.replace(/items-\d+/g, 'items-' + idx);
+        $(this).attr('name', name);
+        $(this).attr('id', 'id_' + name);
+      }
+      var id = $(this).attr('id');
+      if (id) id = id.replace(/items-\d+/g, 'items-' + idx);
+      $(this).attr('id', id);
+      if ($(this).is('input')) $(this).val('');
+      if ($(this).is('select')) $(this).val('');
+    });
+    template.find('.row-num').text(idx + 1);
+    template.find('.remove-row').prop('disabled', false);
+    template.find('.product-name').val('');
+    template.find('.item-qty').val(1);
+    template.find('.item-price').val('0.00');
+    template.find('.item-total').val('0.00');
+    template.find('.errorlist').remove();
+    template.find('small.text-danger').remove();
+    $('#itemsBody').append(template);
+    totalForms.val(idx + 1);
+    calcGrandTotal();
+  });
+
+  $(document).on('click', '.remove-row', function() {
+    var row = $(this).closest('tr');
+    var del = row.find('input[id$="-DELETE"]');
+    if (del.length) {
+      del.val('on');
+      row.hide();
+    } else {
+      row.remove();
+    }
+    $('#itemsBody tr.item-row:visible').each(function(i) {
+      $(this).find('.row-num').text(i + 1);
+    });
+    calcGrandTotal();
+  });
+
+  $(document).on('change', '.product-select', function() { onProductChange(this); });
+  $(document).on('input', '.item-qty, .item-price', function() { calcRow(this); });
+});
+</script>
+{% endblock %}

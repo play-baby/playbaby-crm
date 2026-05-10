@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'home' %}">الرئيسية</a></li>
+<li class="breadcrumb-item active">{{ page_title }}</li>
+{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header" style="background:linear-gradient(135deg,#c62828,#e53935) !important;">
+        <h3 class="card-title" style="color:#fff;">{{ page_title }}</h3>
+      </div>
+      <div class="card-body text-center py-5">
+        <i class="fas fa-exclamation-triangle fa-4x text-danger mb-4"></i>
+        <h4 class="text-danger">هل أنت متأكد من الحذف؟</h4>
+        <p class="text-muted mt-2">سيتم حذف "{{ object }}" نهائياً. هذا الإجراء لا يمكن التراجع عنه.</p>
+      </div>
+      <div class="card-footer text-left">
+        <a href="javascript:history.back()" class="btn btn-secondary btn-sm">إلغاء</a>
+        <form method="post" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash ml-1"></i> حذف</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

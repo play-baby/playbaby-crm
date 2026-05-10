@@ -1,0 +1,344 @@
+from django.urls import reverse_lazy, reverse
+from django.views.generic import ListView, DetailView, DeleteView, TemplateView
+from django.views.generic.edit import CreateView, UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect, render, get_object_or_404
+from django.contrib import messages
+from django.http import JsonResponse
+from .models import Invoice, InvoiceItem, InvoiceStatus, PaymentMethod
+from .forms import InvoiceForm, InvoiceItemFormSet, InvoiceStatusForm, PaymentMethodForm, InvoiceTemplateForm
+from core.models import InvoiceTemplate
+from products.models import Product
+from utils import export_csv, export_xlsx, import_csv, import_xlsx
+from lingerie_crm.roles import SalesRequiredMixin, ShippingRequiredMixin, OwnerRequiredMixin, is_sales, is_owner, is_shipping
+
+class InvoiceListView(LoginRequiredMixin, ListView):
+    model = Invoice
+    template_name = 'invoices/invoice_list.html'
+    context_object_name = 'invoices'
+    paginate_by = 20
+
+    def get_queryset(self):
+        qs = super().get_queryset().select_related('created_by')
+        search = self.request.GET.get('search', '')
+        if search:
+            qs = qs.filter(invoice_number__icontains=search) | qs.filter(customer__name__icontains=search)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['search'] = self.request.GET.get('search', '')
+        ctx['page_title'] = 'قائمة الفواتير'
+        return ctx
+
+class InvoiceCreateView(SalesRequiredMixin, CreateView):
+    model = Invoice
+    form_class = InvoiceForm
+    template_name = 'invoices/invoice_form.html'
+    success_url = reverse_lazy('invoice_list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['page_title'] = 'إنشاء فاتورة جديدة'
+        ctx['products'] = Product.objects.all()
+        if self.request.POST:
+            ctx['item_formset'] = InvoiceItemFormSet(self.request.POST)
+        else:
+            ctx['item_formset'] = InvoiceItemFormSet()
+        return ctx
+
+    def form_valid(self, form):
+        ctx = self.get_context_data()
+        formset = ctx['item_formset']
+        if formset.is_valid():
+            self.object = form.save()
+            self.object.created_by = self.request.user
+            self.object.save(update_fields=['created_by'])
+            formset.instance = self.object
+            formset.save()
+            self.object.recalculate_total()
+            if self.object.paid_amount > self.object.total_amount:
+                self.object.paid_amount = self.object.total_amount
+                self.object.save(update_fields=['paid_amount'])
+            messages.success(self.request, f'تم إنشاء الفاتورة {self.object.invoice_number} بنجاح')
+            return redirect(self.success_url)
+        return self.render_to_response(self.get_context_data(form=form))
+
+class InvoiceUpdateView(LoginRequiredMixin, UpdateView):
+    model = Invoice
+    form_class = InvoiceForm
+    template_name = 'invoices/invoice_form.html'
+    success_url = reverse_lazy('invoice_list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['page_title'] = 'تعديل الفاتورة'
+        ctx['products'] = Product.objects.all()
+        if self.request.POST:
+            ctx['item_formset'] = InvoiceItemFormSet(self.request.POST, instance=self.object)
+        else:
+            ctx['item_formset'] = InvoiceItemFormSet(instance=self.object)
+        return ctx
+
+    def form_valid(self, form):
+        user = self.request.user
+        if is_shipping(user) and not (is_sales(user) or is_owner(user)):
+            form.instance.invoice_number = Invoice.objects.get(pk=self.object.pk).invoice_number
+            form.instance.customer = Invoice.objects.get(pk=self.object.pk).customer
+            form.instance.date = Invoice.objects.get(pk=self.object.pk).date
+            form.instance.total_amount = Invoice.objects.get(pk=self.object.pk).total_amount
+            form.instance.notes = Invoice.objects.get(pk=self.object.pk).notes
+            self.object = form.save()
+            messages.success(self.request, f'تم تحديث حالة الفاتورة {self.object.invoice_number} بنجاح')
+            return redirect(self.success_url)
+        ctx = self.get_context_data()
+        formset = ctx['item_formset']
+        if formset.is_valid():
+            self.object = form.save()
+            formset.instance = self.object
+            formset.save()
+            self.object.recalculate_total()
+            messages.success(self.request, f'تم تعديل الفاتورة {self.object.invoice_number} بنجاح')
+            return redirect(self.success_url)
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        if not (is_sales(request.user) or is_shipping(request.user) or is_owner(request.user)):
+            messages.error(request, 'ليس لديك صلاحية للوصول إلى هذه الصفحة')
+            return redirect('home')
+        return super().dispatch(request, *args, **kwargs)
+
+class InvoiceDetailView(LoginRequiredMixin, DetailView):
+    model = Invoice
+    template_name = 'invoices/invoice_detail.html'
+    context_object_name = 'invoice'
+
+    def get_queryset(self):
+        return super().get_queryset().select_related('created_by')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['page_title'] = f'فاتورة {self.object.invoice_number}'
+        ctx['statuses'] = InvoiceStatus.objects.all()
+        ctx['payment_methods'] = PaymentMethod.objects.all()
+        return ctx
+
+class InvoicePrintView(LoginRequiredMixin, DetailView):
+    model = Invoice
+    template_name = 'invoices/invoice_print.html'
+    context_object_name = 'invoice'
+
+    def get_queryset(self):
+        return super().get_queryset().select_related('created_by')
+
+class InvoiceDeleteView(OwnerRequiredMixin, DeleteView):
+    model = Invoice
+    template_name = 'invoices/invoice_confirm_delete.html'
+    success_url = reverse_lazy('invoice_list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['page_title'] = 'حذف الفاتورة'
+        return ctx
+
+# --- API: Get product details for inline items ---
+@login_required
+def get_product_json(request):
+    pid = request.GET.get('id')
+    if pid:
+        try:
+            p = Product.objects.get(pk=pid)
+            return JsonResponse({'name': p.name, 'price': str(p.price)})
+        except Product.DoesNotExist:
+            pass
+    return JsonResponse({}, status=404)
+
+# --- Quick status update for Shipper ---
+@login_required
+def update_invoice_status(request, pk):
+    if not (is_shipping(request.user) or is_owner(request.user)):
+        messages.error(request, 'ليس لديك صلاحية')
+        return redirect('home')
+    invoice = get_object_or_404(Invoice, pk=pk)
+    if request.method == 'POST':
+        status_id = request.POST.get('status')
+        payment_id = request.POST.get('payment_method')
+        paid_amount = request.POST.get('paid_amount')
+        if status_id:
+            invoice.status_id = status_id
+        if payment_id:
+            invoice.payment_method_id = payment_id
+        if paid_amount is not None and paid_amount != '':
+            try:
+                invoice.paid_amount = float(paid_amount)
+            except ValueError:
+                pass
+        invoice.save()
+        messages.success(request, f'تم تحديث حالة الفاتورة {invoice.invoice_number} بنجاح')
+    return redirect('invoice_detail', pk=pk)
+
+# --- Settings: Invoice Statuses ---
+class InvoiceStatusListView(OwnerRequiredMixin, ListView):
+    model = InvoiceStatus
+    template_name = 'invoices/settings_list.html'
+    context_object_name = 'items'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['page_title'] = 'حالات الفواتير'
+        ctx['settings_type'] = 'status'
+        ctx['create_url'] = reverse_lazy('invoice_status_add')
+        return ctx
+
+class InvoiceStatusCreateView(OwnerRequiredMixin, CreateView):
+    model = InvoiceStatus
+    form_class = InvoiceStatusForm
+    template_name = 'invoices/settings_form.html'
+    success_url = reverse_lazy('invoice_status_list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['page_title'] = 'إضافة حالة جديدة'
+        return ctx
+
+class InvoiceStatusUpdateView(OwnerRequiredMixin, UpdateView):
+    model = InvoiceStatus
+    form_class = InvoiceStatusForm
+    template_name = 'invoices/settings_form.html'
+    success_url = reverse_lazy('invoice_status_list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['page_title'] = 'تعديل الحالة'
+        return ctx
+
+class InvoiceStatusDeleteView(OwnerRequiredMixin, DeleteView):
+    model = InvoiceStatus
+    template_name = 'invoices/settings_confirm_delete.html'
+    success_url = reverse_lazy('invoice_status_list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['page_title'] = 'حذف الحالة'
+        return ctx
+
+# --- Settings: Payment Methods ---
+class PaymentMethodListView(OwnerRequiredMixin, ListView):
+    model = PaymentMethod
+    template_name = 'invoices/settings_list.html'
+    context_object_name = 'items'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['page_title'] = 'طرق الدفع'
+        ctx['settings_type'] = 'payment'
+        ctx['create_url'] = reverse_lazy('payment_method_add')
+        return ctx
+
+class PaymentMethodCreateView(OwnerRequiredMixin, CreateView):
+    model = PaymentMethod
+    form_class = PaymentMethodForm
+    template_name = 'invoices/settings_form.html'
+    success_url = reverse_lazy('payment_method_list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['page_title'] = 'إضافة طريقة دفع جديدة'
+        return ctx
+
+class PaymentMethodUpdateView(OwnerRequiredMixin, UpdateView):
+    model = PaymentMethod
+    form_class = PaymentMethodForm
+    template_name = 'invoices/settings_form.html'
+    success_url = reverse_lazy('payment_method_list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['page_title'] = 'تعديل طريقة الدفع'
+        return ctx
+
+class PaymentMethodDeleteView(OwnerRequiredMixin, DeleteView):
+    model = PaymentMethod
+    template_name = 'invoices/settings_confirm_delete.html'
+    success_url = reverse_lazy('payment_method_list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['page_title'] = 'حذف طريقة الدفع'
+        return ctx
+
+# --- Import / Export ---
+INVOICE_FIELDS = [
+    Invoice._meta.get_field('invoice_number'),
+    Invoice._meta.get_field('customer'),
+    Invoice._meta.get_field('date'),
+    Invoice._meta.get_field('total_amount'),
+    Invoice._meta.get_field('paid_amount'),
+    Invoice._meta.get_field('notes'),
+]
+
+INVOICE_FIELD_MAP = {
+    'رقم الفاتورة': 'invoice_number',
+    'العميل': 'customer',
+    'التاريخ': 'date',
+    'الإجمالي': 'total_amount',
+    'المدفوع': 'paid_amount',
+    'ملاحظات': 'notes',
+}
+
+@login_required
+def export_invoices_csv(request):
+    if not (is_sales(request.user) or is_owner(request.user)):
+        messages.error(request, 'ليس لديك صلاحية')
+        return redirect('home')
+    return export_csv(Invoice, INVOICE_FIELDS, 'الفواتير')
+
+@login_required
+def export_invoices_xlsx(request):
+    if not (is_sales(request.user) or is_owner(request.user)):
+        messages.error(request, 'ليس لديك صلاحية')
+        return redirect('home')
+    return export_xlsx(Invoice, INVOICE_FIELDS, 'الفواتير')
+
+@login_required
+def import_invoices(request):
+    if not (is_sales(request.user) or is_owner(request.user)):
+        messages.error(request, 'ليس لديك صلاحية')
+        return redirect('home')
+    if request.method == 'POST' and request.FILES.get('file'):
+        file = request.FILES['file']
+        fmt = request.POST.get('format', 'csv')
+        try:
+            if fmt == 'csv':
+                count = import_csv(file, Invoice, INVOICE_FIELD_MAP)
+            else:
+                count = import_xlsx(file, Invoice, INVOICE_FIELD_MAP)
+            messages.success(request, f'تم استيراد {count} فاتورة بنجاح')
+        except Exception as e:
+            messages.error(request, f'خطأ في الاستيراد: {e}')
+    return redirect('invoice_list')
+
+
+class InvoiceTemplateUpdateView(LoginRequiredMixin, OwnerRequiredMixin, UpdateView):
+    model = InvoiceTemplate
+    form_class = InvoiceTemplateForm
+    template_name = 'invoices/invoice_template_form.html'
+
+    def get_object(self, queryset=None):
+        return InvoiceTemplate.get()
+
+    def get_success_url(self):
+        return reverse('invoice_template_edit')
+
+    def form_valid(self, form):
+        resp = super().form_valid(form)
+        messages.success(self.request, 'تم حفظ تصميم الفاتورة بنجاح')
+        return resp

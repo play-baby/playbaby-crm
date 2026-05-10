@@ -1,0 +1,392 @@
+{% extends 'base.html' %}
+{% block title %}فاتورة {{ invoice.invoice_number }}{% endblock %}
+{% block extra_css %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+
+  :root {
+    --inv-red: #dc143c;
+    --inv-text: #333;
+    --inv-muted: #888;
+    --inv-border: #e0e0e0;
+  }
+
+  /* ===== INVOICE PAGE ===== */
+  .invoice-page {
+    font-family: 'Tajawal', sans-serif;
+    direction: rtl;
+    background: #fff;
+    color: var(--inv-text);
+    max-width: 210mm;
+    margin: 20px auto;
+    padding: 2cm 1.5cm;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.35);
+    border-radius: 4px;
+    box-sizing: border-box;
+    position: relative;
+  }
+
+  /* ===== HEADER ===== */
+  .inv-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 20px;
+    border-bottom: 3px solid var(--inv-red);
+    margin-bottom: 25px;
+  }
+  .inv-brand { text-align: center; }
+  .inv-brand img { max-height: 60px; margin-bottom: 6px; }
+  .inv-brand h2 {
+    color: var(--inv-red);
+    margin: 4px 0 2px;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 1px;
+  }
+  .inv-brand p { margin: 0; font-size: 11px; color: var(--inv-muted); }
+  .inv-meta { text-align: left; }
+  .inv-meta h1 {
+    font-size: 26px;
+    font-weight: 800;
+    margin: 0 0 10px;
+    color: var(--inv-text);
+  }
+  .inv-meta table { font-size: 12.5px; }
+  .inv-meta td { padding: 2px 0; }
+  .inv-meta td:first-child { font-weight: 700; color: var(--inv-muted); padding-left: 10px; white-space: nowrap; }
+  .inv-meta td:last-child { direction: ltr; text-align: left; font-weight: 500; }
+
+  /* ===== CUSTOMER ===== */
+  .inv-section-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--inv-red);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--inv-border);
+  }
+  .inv-customer { margin-bottom: 22px; }
+  .inv-customer-name { font-size: 16px; font-weight: 700; margin: 0 0 4px; }
+  .inv-customer-detail { font-size: 12.5px; color: #555; margin: 0 0 2px; }
+  .inv-customer-detail i { width: 16px; text-align: center; margin-left: 4px; color: var(--inv-muted); }
+
+  /* ===== STATUS ===== */
+  .inv-summary {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 22px;
+    font-size: 12.5px;
+  }
+  .inv-summary-item strong { font-weight: 700; }
+  .status-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 3px;
+    font-weight: 700;
+    font-size: 11px;
+  }
+
+  /* ===== TABLE ===== */
+  .inv-table-wrap { margin-bottom: 20px; }
+  .inv-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .inv-table colgroup col:nth-child(1) { width: 5%; }
+  .inv-table colgroup col:nth-child(2) { width: 47%; }
+  .inv-table colgroup col:nth-child(3) { width: 12%; }
+  .inv-table colgroup col:nth-child(4) { width: 18%; }
+  .inv-table colgroup col:nth-child(5) { width: 18%; }
+  .inv-table thead th {
+    background: #f5f5f5;
+    color: var(--inv-text);
+    font-weight: 800;
+    padding: 10px 12px;
+    border: 1px solid var(--inv-border);
+    font-size: 12px;
+    text-align: center;
+  }
+  .inv-table thead th:nth-child(2) { text-align: right; }
+  .inv-table tbody td {
+    padding: 9px 12px;
+    border: 1px solid var(--inv-border);
+    vertical-align: middle;
+  }
+  .inv-table tbody td:nth-child(1),
+  .inv-table tbody td:nth-child(3),
+  .inv-table tbody td:nth-child(4),
+  .inv-table tbody td:nth-child(5) { text-align: center; }
+  .inv-table tbody td:nth-child(2) { text-align: right; }
+  .inv-table tbody tr:last-child td { border-bottom: 2px solid var(--inv-text); }
+  .inv-table tfoot td {
+    padding: 6px 12px;
+    border: none;
+    font-size: 13px;
+  }
+  .inv-table tfoot tr:first-child td { padding-top: 10px; }
+  .inv-table tfoot td:first-child { text-align: left; font-weight: 700; }
+  .inv-table tfoot td:last-child { text-align: center; font-weight: 800; width: 18%; }
+  .inv-total-row td { font-size: 16px !important; }
+  .inv-total-row td:last-child { color: var(--inv-red); }
+
+  /* ===== NOTES ===== */
+  .inv-notes {
+    margin-top: 18px;
+    padding: 12px 14px;
+    background: #fafafa;
+    border-right: 4px solid var(--inv-red);
+    font-size: 12.5px;
+    border-radius: 0 6px 6px 0;
+  }
+  .inv-notes strong { font-weight: 700; color: var(--inv-text); }
+
+  /* ===== FOOTER ===== */
+  .inv-footer {
+    text-align: center;
+    padding-top: 18px;
+    margin-top: 30px;
+    border-top: 2px solid var(--inv-border);
+  }
+  .inv-footer p:first-child {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--inv-red);
+    margin: 0 0 4px;
+  }
+  .inv-footer p:last-child {
+    font-size: 10px;
+    color: var(--inv-muted);
+    margin: 0;
+  }
+
+  /* ===== PRINT ===== */
+  @media print {
+    html, body {
+      background: #fff !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    body > .wrapper {
+      background: #fff !important;
+    }
+    .main-sidebar, .main-header, .main-footer,
+    .breadcrumb, .content-header,
+    .no-print, .no-print-inv {
+      display: none !important;
+    }
+    .wrapper, .content-wrapper {
+      display: block !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      width: auto !important;
+      min-height: auto !important;
+      background: none !important;
+      border: none !important;
+    }
+    .content, .container-fluid {
+      display: block !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      max-width: none !important;
+      width: auto !important;
+    }
+    .card, .card-header, .card-body {
+      display: none !important;
+    }
+    .invoice-page {
+      display: block !important;
+      width: auto !important;
+      min-height: auto !important;
+      max-width: none !important;
+      margin: 0 !important;
+      padding: 1.5cm !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      background: #fff !important;
+      font-size: inherit !important;
+      box-sizing: border-box !important;
+    }
+    .inv-table { font-size: inherit !important; }
+    .inv-table thead th {
+      background: #f5f5f5 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .status-badge {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+</style>
+{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'invoice_list' %}">الفواتير</a></li>
+<li class="breadcrumb-item active">فاتورة {{ invoice.invoice_number }}</li>
+{% endblock %}
+{% block content %}
+<!-- ===== TOOLBAR (screen only) ===== -->
+<div class="no-print" style="max-width:210mm;margin:0 auto 12px;display:flex;gap:8px;flex-wrap:wrap;">
+  <a href="{% url 'invoice_print' invoice.id %}" target="_blank" class="btn btn-dark btn-sm">طباعة</a>
+  {% if is_sales %}
+  <a href="{% url 'invoice_edit' invoice.id %}" class="btn btn-warning btn-sm">تعديل</a>
+  {% if is_owner %}
+  <a href="{% url 'invoice_delete' invoice.id %}" class="btn btn-danger btn-sm">حذف</a>
+  {% endif %}
+  {% elif is_shipping %}
+  <a href="{% url 'invoice_edit' invoice.id %}" class="btn btn-warning btn-sm">تحديث الحالة</a>
+  {% endif %}
+  <a href="{% url 'invoice_list' %}" class="btn btn-secondary btn-sm">العودة</a>
+</div>
+
+<!-- ===== A4 INVOICE ===== -->
+<div class="invoice-page">
+
+  <!-- HEADER -->
+  <div class="inv-header">
+    <div class="inv-brand">
+      {% if site_logo %}
+      <img src="{{ site_logo }}" alt="Play Baby">
+      {% endif %}
+      <h2>Play Baby Lingerie</h2>
+      <p>{{ site_name }}</p>
+    </div>
+    <div class="inv-meta">
+      <h1>فاتورة</h1>
+      <table>
+        <tr><td>رقم الفاتورة</td><td>{{ invoice.invoice_number }}</td></tr>
+        <tr><td>تاريخ الطلب</td><td>{{ invoice.date|date:"Y-m-d" }}</td></tr>
+        {% if invoice.created_by %}<tr><td>تم بواسطة</td><td>{{ invoice.created_by.username }}</td></tr>{% endif %}
+        <tr><td>تاريخ الطباعة</td><td>{% now "Y-m-d" %}</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- CUSTOMER -->
+  <div class="inv-customer">
+    <div class="inv-section-title">بيانات العميل</div>
+    {% if invoice.customer %}
+    <p class="inv-customer-name">{{ invoice.customer.name }}</p>
+    {% if invoice.customer.address %}<p class="inv-customer-detail"><i class="fas fa-map-marker-alt"></i> {{ invoice.customer.address }}</p>{% endif %}
+    {% else %}
+    <p style="color:var(--inv-muted);font-size:13px;">---</p>
+    {% endif %}
+  </div>
+
+  <!-- STATUS SUMMARY -->
+  <div class="inv-summary">
+    <div class="inv-summary-item"><strong>حالة الطلب:</strong>
+      {% if invoice.status %}
+      <span class="status-badge" style="background:{{ invoice.status.color }};color:#fff;">{{ invoice.status.name }}</span>
+      {% else %}<span style="color:var(--inv-muted);">---</span>{% endif %}
+    </div>
+    <div class="inv-summary-item"><strong>طريقة الدفع:</strong> {{ invoice.payment_method.name|default:"---" }}</div>
+    <div class="inv-summary-item"><strong>المدفوع:</strong> {{ invoice.paid_amount }} / {{ invoice.total_amount }} ج.م</div>
+  </div>
+
+  <!-- ITEMS TABLE -->
+  <div class="inv-table-wrap">
+    <table class="inv-table">
+      <colgroup>
+        <col>
+        <col>
+        <col>
+        <col>
+        <col>
+      </colgroup>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>المنتج</th>
+          <th>الكمية</th>
+          <th>سعر الوحدة</th>
+          <th>الإجمالي</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in invoice.items.all %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ item.product_name }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>{{ item.unit_price }} ج.م</td>
+          <td>{{ item.total }} ج.م</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">لا توجد عناصر</td></tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr class="inv-total-row">
+          <td colspan="4">الإجمالي الكلي</td>
+          <td>{{ invoice.total_amount }} ج.م</td>
+        </tr>
+        <tr>
+          <td colspan="4">المدفوع</td>
+          <td>{{ invoice.paid_amount }} ج.م</td>
+        </tr>
+        <tr>
+          <td colspan="4">المتبقي</td>
+          <td>{{ invoice.remaining_amount }} ج.م</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <!-- NOTES -->
+  {% if invoice.notes %}
+  <div class="inv-notes">
+    <strong>ملاحظات:</strong>
+    <p style="margin:4px 0 0;">{{ invoice.notes }}</p>
+  </div>
+  {% endif %}
+
+  <!-- FOOTER -->
+  <div class="inv-footer">
+    <p>شكراً لتسوقكم معنا</p>
+    <p>{{ site_name }} &copy; {{ current_year }}</p>
+  </div>
+
+</div>
+
+<!-- ===== SHIPPING STATUS UPDATE (screen only) ===== -->
+{% if is_shipping and not is_sales %}
+<div class="no-print card mt-3" style="max-width:210mm;margin:16px auto !important;">
+  <div class="card-header"><h5 class="card-title"><i class="fas fa-shipping-fast ml-2"></i> تحديث حالة الشحن</h5></div>
+  <div class="card-body">
+    <form method="post" action="{% url 'update_invoice_status' invoice.id %}" style="display:flex;flex-wrap:wrap;gap:10px;align-items:end;">
+      {% csrf_token %}
+      <div style="flex:1;min-width:140px;">
+        <label class="small">الحالة</label>
+        <select name="status" class="form-control form-control-sm">
+          <option value="">-- الحالة --</option>
+          {% for s in statuses %}
+          <option value="{{ s.id }}" {% if invoice.status_id == s.id %}selected{% endif %}>{{ s.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="flex:1;min-width:140px;">
+        <label class="small">طريقة الدفع</label>
+        <select name="payment_method" class="form-control form-control-sm">
+          <option value="">-- طريقة الدفع --</option>
+          {% for p in payment_methods %}
+          <option value="{{ p.id }}" {% if invoice.payment_method_id == p.id %}selected{% endif %}>{{ p.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="flex:0 0 100px;">
+        <label class="small">المبلغ</label>
+        <input type="number" name="paid_amount" class="form-control form-control-sm" step="0.01" min="0" value="{{ invoice.paid_amount }}">
+      </div>
+      <div>
+        <button type="submit" class="btn btn-success btn-sm">حفظ</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+{% block extra_js %}{% endblock %}

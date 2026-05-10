@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}تصميم الفاتورة{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'invoice_list' %}">الفواتير</a></li>
+<li class="breadcrumb-item active">تصميم الفاتورة</li>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title"><i class="fas fa-paint-brush ml-2"></i> تصميم الفاتورة</h3>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>{{ form.primary_color.label }}</label>
+              {{ form.primary_color }}
+              <small class="text-muted">اللون الأساسي للعنوان والجداول</small>
+            </div>
+            <div class="form-group">
+              <label>{{ form.company_name_color.label }}</label>
+              {{ form.company_name_color }}
+              <small class="text-muted">لون اسم الشركة في رأس الفاتورة</small>
+            </div>
+            <div class="form-group">
+              <label>{{ form.header_size.label }}</label>
+              {{ form.header_size }}
+              <small class="text-muted">حجم خط اسم الشركة (14-40)</small>
+            </div>
+            <div class="form-group">
+              <label>{{ form.font_family.label }}</label>
+              <select name="font_family" class="form-control">
+                <option value="Tajawal" {% if form.font_family.value == 'Tajawal' %}selected{% endif %}>Tajawal</option>
+                <option value="Almarai" {% if form.font_family.value == 'Almarai' %}selected{% endif %}>Almarai</option>
+                <option value="Noto Kufi Arabic" {% if form.font_family.value == 'Noto Kufi Arabic' %}selected{% endif %}>Noto Kufi Arabic</option>
+                <option value="Cairo" {% if form.font_family.value == 'Cairo' %}selected{% endif %}>Cairo</option>
+                <option value="Harmattan" {% if form.font_family.value == 'Harmattan' %}selected{% endif %}>Harmattan</option>
+              </select>
+              <small class="text-muted">الخط المستخدم في الفاتورة</small>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>{{ form.invoice_title.label }}</label>
+              {{ form.invoice_title }}
+              <small class="text-muted">النص الذي يظهر كعنوان للفاتورة</small>
+            </div>
+            <div class="form-group">
+              <label>{{ form.footer_message.label }}</label>
+              {{ form.footer_message }}
+              <small class="text-muted">رسالة الشكر أسفل الفاتورة</small>
+            </div>
+            <div class="form-group">
+              <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="id_show_logo" name="show_logo" {% if form.show_logo.value %}checked{% endif %}>
+                <label class="custom-control-label" for="id_show_logo">{{ form.show_logo.label }}</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="id_show_footer" name="show_footer" {% if form.show_footer.value %}checked{% endif %}>
+                <label class="custom-control-label" for="id_show_footer">{{ form.show_footer.label }}</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>{{ form.border_style.label }}</label>
+              {{ form.border_style }}
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <div class="form-group">
+              <label>{{ form.custom_css.label }}</label>
+              {{ form.custom_css }}
+              <small class="text-muted">{{ form.custom_css.help_text }}</small>
+            </div>
+          </div>
+        </div>
+        <div class="form-group text-left">
+          <a href="{% url 'invoice_list' %}" class="btn btn-secondary">إلغاء</a>
+          <button type="submit" class="btn btn-success"><i class="fas fa-save ml-1"></i> حفظ التصميم</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card mt-3">
+    <div class="card-header">
+      <h3 class="card-title"><i class="fas fa-eye ml-2"></i> معاينة التصميم</h3>
+    </div>
+    <div class="card-body text-center">
+      <p class="text-muted">اضغط على زر الطباعة من صفحة الفاتورة لرؤية التصميم الجديد</p>
+      <a href="{% url 'invoice_list' %}" class="btn btn-info btn-sm"><i class="fas fa-arrow-right ml-1"></i> الذهاب للفواتير</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

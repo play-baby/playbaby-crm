@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% block title %}المنتجات{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item active">المنتجات</li>
+{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <div class="row align-items-center">
+      <div class="col-md-5 col-lg-4 mb-2 mb-md-0">
+        <form method="get" class="form-inline">
+          <div class="input-group w-100">
+            <input type="text" name="search" class="form-control" placeholder="بحث..." value="{{ search }}">
+            <div class="input-group-append">
+              <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i></button>
+              {% if search %}
+              <a href="{% url 'product_list' %}" class="btn btn-secondary"><i class="fas fa-times"></i></a>
+              {% endif %}
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="col-md-7 col-lg-8 text-left">
+        {% if is_sales %}
+        <div class="btn-group btn-group-sm">
+          <button class="btn btn-dark dropdown-toggle btn-sm" data-toggle="dropdown">
+            <i class="fas fa-download ml-1"></i> <span class="d-none d-sm-inline">تصدير</span>
+          </button>
+          <div class="dropdown-menu">
+            <a href="{% url 'product_export_csv' %}" class="dropdown-item"><i class="fas fa-file-csv ml-2"></i> CSV</a>
+            <a href="{% url 'product_export_xlsx' %}" class="dropdown-item"><i class="fas fa-file-excel ml-2"></i> Excel</a>
+          </div>
+        </div>
+        <button class="btn btn-dark btn-sm" data-toggle="modal" data-target="#importModal">
+          <i class="fas fa-upload ml-1"></i> <span class="d-none d-sm-inline">استيراد</span>
+        </button>
+        <a href="{% url 'product_add' %}" class="btn btn-success btn-sm">
+          <i class="fas fa-plus ml-1"></i> <span class="d-none d-sm-inline">إضافة</span>
+          <i class="fas fa-plus d-sm-none"></i>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover table-striped mb-0">
+        <thead class="bg-light">
+          <tr>
+            <th>#</th>
+            <th>الصورة</th>
+            <th>الاسم</th>
+            <th>التصنيف</th>
+            <th>السعر</th>
+            <th>الكمية</th>
+            <th>تاريخ الإضافة</th>
+            <th>الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for product in products %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>
+              {% if product.image %}
+              <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width:45px;height:45px;border-radius:8px;object-fit:cover;">
+              {% else %}
+              <div style="width:45px;height:45px;border-radius:8px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;">
+                <i class="fas fa-box"></i>
+              </div>
+              {% endif %}
+            </td>
+            <td><a href="{% url 'product_detail' product.id %}">{{ product.name }}</a></td>
+            <td>{{ product.category|default:"---" }}</td>
+            <td>{{ product.price }} ج.م</td>
+            <td>
+              {% if product.quantity > 10 %}
+              <span class="badge badge-success">{{ product.quantity }}</span>
+              {% elif product.quantity > 0 %}
+              <span class="badge badge-warning">{{ product.quantity }}</span>
+              {% else %}
+              <span class="badge badge-danger">نفذ</span>
+              {% endif %}
+            </td>
+            <td>{{ product.created_at|date:"Y-m-d" }}</td>
+            <td>
+              <div style="display:flex;gap:4px;flex-wrap:nowrap;">
+              <a href="{% url 'product_detail' product.id %}" class="btn btn-info btn-sm" style="border-radius:8px;">عرض</a>
+              {% if is_sales %}
+              <a href="{% url 'product_edit' product.id %}" class="btn btn-warning btn-sm" style="border-radius:8px;">تعديل</a>
+              {% endif %}
+              {% if is_owner %}
+              <a href="{% url 'product_delete' product.id %}" class="btn btn-danger btn-sm" style="border-radius:8px;">حذف</a>
+              {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" class="text-center py-4">
+              <i class="fas fa-box fa-3x text-muted mb-3 d-block"></i>
+              <h5 class="text-muted">لا يوجد منتجات</h5>
+              <a href="{% url 'product_add' %}" class="btn btn-success btn-sm"><i class="fas fa-plus ml-1"></i> إضافة منتج</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% if is_paginated %}
+  <div class="card-footer">
+    <nav>
+      <ul class="pagination justify-content-center mb-0">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">السابق</a></li>
+        {% endif %}
+        {% for num in page_obj.paginator.page_range %}
+        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+          <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}">{{ num }}</a>
+        </li>
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}">التالي</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+</div>
+
+<div class="modal fade" id="importModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header" style="background:var(--pb-red);color:#fff;">
+        <h5 class="modal-title">استيراد منتجات</h5>
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <form method="post" action="{% url 'product_import' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="form-group">
+            <label>نوع الملف</label>
+            <select name="format" class="form-control">
+              <option value="csv">CSV</option>
+              <option value="xlsx">Excel</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>رفع الملف</label>
+            <input type="file" name="file" class="form-control-file" accept=".csv,.xlsx" required>
+          </div>
+          <small class="text-muted">الأعمدة: اسم المنتج، السعر، الكمية</small>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">إلغاء</button>
+          <button type="submit" class="btn btn-danger">استيراد</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

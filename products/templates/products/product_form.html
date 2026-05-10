@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'product_list' %}">المنتجات</a></li>
+<li class="breadcrumb-item active">{{ page_title }}</li>
+{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">{{ page_title }}</h3>
+  </div>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>{{ form.name.label }}</label>
+            {{ form.name }}
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>{{ form.category.label }}</label>
+            {{ form.category }}
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4">
+          <div class="form-group">
+            <label>{{ form.price.label }}</label>
+            {{ form.price }}
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label>{{ form.cost.label }}</label>
+            {{ form.cost }}
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group">
+            <label>{{ form.quantity.label }}</label>
+            {{ form.quantity }}
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div class="form-group">
+            <label>{{ form.description.label }}</label>
+            {{ form.description }}
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>{{ form.image.label }}</label>
+            <div class="custom-file">
+              {{ form.image }}
+              <label class="custom-file-label" for="id_image">اختر صورة</label>
+            </div>
+            {% if form.instance.image %}
+            <div class="mt-2">
+              <img src="{{ form.instance.image.url }}" style="max-width:100px;border-radius:8px;">
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer text-left">
+      <a href="{% url 'product_list' %}" class="btn btn-secondary btn-sm">إلغاء</a>
+      <button type="submit" class="btn btn-success btn-sm">
+        <i class="fas fa-save ml-1"></i> حفظ
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+  $(".custom-file-input").on("change", function() {
+    var fileName = $(this).val().split("\\").pop();
+    $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+  });
+</script>
+{% endblock %}
