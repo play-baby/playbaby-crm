@@ -34,7 +34,8 @@
     }
     .sidebar-collapse .content-wrapper,
     .sidebar-collapse .main-footer,
-    .sidebar-collapse .main-header { margin-right: 4.6rem !important; }
+    .sidebar-collapse .main-header { margin-right: 0 !important; }
+    .sidebar-collapse .main-sidebar { z-index: 1040; }
 
     /* ===== MOBILE RESPONSIVE (TABLETS) ===== */
     @media (max-width: 991.98px) {
@@ -136,19 +137,19 @@
     .nav-sidebar .nav-link {
       display: flex !important;
       align-items: center !important;
-      justify-content: flex-start !important;
+      justify-content: center !important;
       flex-direction: row;
-      padding: 0.6rem 0.7rem !important;
+      padding: 0.6rem 0.5rem 0.6rem 0.8rem !important;
       margin: 2px 8px;
       border-radius: 14px;
-      gap: 12px;
+      gap: 10px;
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
     }
     .nav-sidebar .nav-link:hover {
       background: rgba(220,20,60,0.08) !important;
-      transform: translateX(-2px);
+      transform: translateX(-3px);
     }
     .nav-sidebar .nav-link.active {
       background: linear-gradient(135deg, rgba(220,20,60,0.2), rgba(255,23,68,0.05)) !important;
@@ -174,17 +175,25 @@
       color: rgba(255,255,255,0.8);
     }
     .nav-link.active p { color: #fff; }
-    .sidebar-collapse .main-sidebar { width: 4.6rem; }
+    .sidebar-collapse .main-sidebar { width: 4.6rem; z-index: 1040; }
     .sidebar-collapse .nav-sidebar .nav-link {
       padding: 0.7rem 0 !important;
       flex-direction: column;
       justify-content: center !important;
+      margin: 2px 4px;
     }
     .sidebar-collapse .brand-text,
     .sidebar-collapse .nav-sidebar .nav-header,
     .sidebar-collapse .nav-sidebar .nav-link p,
     .sidebar-collapse .nav-treeview { display: none; }
     .sidebar-collapse .nav-sidebar .nav-link .nav-icon { font-size: 1.3rem; width: auto !important; }
+
+    /* Toggle button matches collapsed sidebar width */
+    .main-header .navbar-nav:first-child .nav-item:first-child .nav-link {
+      width: 4.6rem;
+      text-align: center;
+      padding: 0.5rem 0 !important;
+    }
 
     /* Treeview fixes */
     .nav-sidebar .nav-treeview {
