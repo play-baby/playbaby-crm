@@ -26,4 +26,11 @@ urlpatterns = [
     path('settings/payment/add/', views.PaymentMethodCreateView.as_view(), name='payment_method_add'),
     path('settings/payment/<int:pk>/edit/', views.PaymentMethodUpdateView.as_view(), name='payment_method_edit'),
     path('settings/payment/<int:pk>/delete/', views.PaymentMethodDeleteView.as_view(), name='payment_method_delete'),
+    # Notifications
+    path('notifications/', views.notification_list, name='notification_list'),
+    path('notifications/<int:pk>/read/', views.notification_mark_read, name='notification_mark_read'),
+    path('notifications/read-all/', views.notification_mark_all_read, name='notification_mark_all_read'),
+    # Shipping availability
+    path('<int:pk>/confirm-availability/', views.confirm_availability, name='confirm_availability'),
+    path('<int:pk>/approve-revision/', views.approve_revision, name='approve_revision'),
 ]

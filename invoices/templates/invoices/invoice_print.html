@@ -124,7 +124,7 @@
     color: #888;
     margin: 0;
   }
-  {{ invoice_template.custom_css|safe }}
+  {{ invoice_template.custom_css|default:''|safe }}
   @media print {
     body { padding: 1.5cm; max-width: none; margin: 0; }
     .inv-table thead th { background: #f5f5f5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }

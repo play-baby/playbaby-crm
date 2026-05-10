@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'home' %}">الرئيسية</a></li>
+<li class="breadcrumb-item"><a href="{% url 'reports:report_revenue' %}">التقارير</a></li>
+<li class="breadcrumb-item active">الإيرادات</li>
+{% endblock %}
+{% block extra_css %}
+<style>
+  .report-nav .nav-link { color: rgba(255,255,255,0.6); border-radius: 10px; padding: 8px 16px; margin: 0 2px; font-weight: 600; font-size: 0.85rem; }
+  .report-nav .nav-link.active { background: var(--pb-red); color: #fff; }
+  .report-nav .nav-link:hover:not(.active) { background: rgba(220,20,60,0.1); color: var(--pb-red); }
+  .stat-box { text-align: center; padding: 1rem; }
+  .stat-box-value { font-size: 1.5rem; font-weight: 800; color: #fff; }
+  .stat-box-label { font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 4px; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+  <div class="col-12">
+    <ul class="nav report-nav">
+      <li class="nav-item"><a class="nav-link active" href="{% url 'reports:report_revenue' %}">الإيرادات</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'reports:report_products' %}">المنتجات</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'reports:report_customers' %}">العملاء</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'reports:report_status' %}">حالات الفواتير</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'reports:report_shipping' %}">أداء الشحن</a></li>
+    </ul>
+  </div>
+</div>
+<div class="row mb-3">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-calendar-alt ml-1"></i> اختر السنة</h3>
+        <div class="card-tools">
+          <form method="get" class="form-inline">
+            <select name="year" class="form-control form-control-sm ml-2" style="width:auto;" onchange="this.form.submit()">
+              {% for y in available_years %}
+              <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+              {% endfor %}
+            </select>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row mb-3">
+  <div class="col-md-3 col-6 mb-2"><div class="card"><div class="card-body stat-box"><div class="stat-box-value text-success">{{ total_revenue|floatformat:0 }}</div><div class="stat-box-label">إجمالي الإيرادات</div></div></div></div>
+  <div class="col-md-3 col-6 mb-2"><div class="card"><div class="card-body stat-box"><div class="stat-box-value text-info">{{ total_paid|floatformat:0 }}</div><div class="stat-box-label">إجمالي المدفوعات</div></div></div></div>
+  <div class="col-md-3 col-6 mb-2"><div class="card"><div class="card-body stat-box"><div class="stat-box-value text-warning">{{ total_revenue|floatformat:0 }}</div><div class="stat-box-label">إجمالي الإيرادات (ج.م)</div></div></div></div>
+  <div class="col-md-3 col-6 mb-2"><div class="card"><div class="card-body stat-box"><div class="stat-box-value text-danger">{{ total_invoices }}</div><div class="stat-box-label">عدد الفواتير</div></div></div></div>
+</div>
+<div class="row mb-3">
+  <div class="col-lg-8 mb-3 mb-lg-0">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title"><i class="fas fa-chart-line ml-1"></i>الإيرادات الشهرية - {{ selected_year }}</h3></div>
+      <div class="card-body"><canvas id="revenueChart"></canvas></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title"><i class="fas fa-table ml-1"></i>البيانات الشهرية</h3></div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead><tr><th>الشهر</th><th>الإيرادات</th><th>المدفوع</th><th>عدد الفواتير</th></tr></thead>
+            <tbody>
+              {% for m in months_data %}
+              <tr>
+                <td>{{ m.month_name }}</td>
+                <td class="text-success">{{ m.revenue|floatformat:2 }}</td>
+                <td class="text-info">{{ m.paid|floatformat:2 }}</td>
+                <td>{{ m.count }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+Chart.defaults.color = 'rgba(255,255,255,0.5)';
+Chart.defaults.font.family = 'Tajawal, sans-serif';
+var ctx = document.getElementById('revenueChart');
+if (ctx) {
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: {{ months_json|safe }},
+      datasets: [{
+        label: 'الإيرادات',
+        data: {{ revenue_json|safe }},
+        backgroundColor: 'rgba(220,20,60,0.6)',
+        borderColor: '#dc143c',
+        borderWidth: 1,
+        borderRadius: 4,
+      }, {
+        label: 'المدفوعات',
+        data: {{ paid_json|safe }},
+        backgroundColor: 'rgba(0,188,212,0.6)',
+        borderColor: '#00bcd4',
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'top', labels: { boxWidth: 10, padding: 12, font: { size: 11 } } } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { font: { size: 10 } } },
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+      }
+    }
+  });
+}
+</script>
+{% endblock %}

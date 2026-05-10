@@ -3,11 +3,13 @@ from django.views.generic import ListView, DetailView, DeleteView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
 from django.utils.timezone import now
-from .models import Invoice, InvoiceItem, InvoiceStatus, InvoiceStatusLog, PaymentMethod
+from django.db.models import Sum, Q
+from .models import Invoice, InvoiceItem, InvoiceStatus, InvoiceStatusLog, PaymentMethod, Notification
 from .forms import InvoiceForm, InvoiceItemFormSet, InvoiceStatusForm, PaymentMethodForm, InvoiceTemplateForm
 from core.models import InvoiceTemplate
 from products.models import Product
@@ -479,3 +481,121 @@ class InvoiceTemplateUpdateView(LoginRequiredMixin, OwnerRequiredMixin, UpdateVi
         resp = super().form_valid(form)
         messages.success(self.request, 'تم حفظ تصميم الفاتورة بنجاح')
         return resp
+
+
+# ═══════════════════════════════════════════════
+# NOTIFICATION VIEWS
+# ═══════════════════════════════════════════════
+
+@login_required
+def notification_list(request):
+    notifications = Notification.objects.filter(recipient=request.user)
+    unread_count = notifications.filter(is_read=False).count()
+    return render(request, 'invoices/notification_list.html', {
+        'notifications': notifications,
+        'unread_count': unread_count,
+    })
+
+
+@login_required
+def notification_mark_read(request, pk):
+    notification = get_object_or_404(Notification, pk=pk, recipient=request.user)
+    notification.is_read = True
+    notification.save(update_fields=['is_read'])
+    return redirect('invoice_detail', pk=notification.invoice_id)
+
+
+@login_required
+def notification_mark_all_read(request):
+    Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+    messages.success(request, 'تم تحديد الكل كمقروء')
+    return redirect('notification_list')
+
+
+# ═══════════════════════════════════════════════
+# SHIPPING AVAILABILITY CONFIRMATION
+# ═══════════════════════════════════════════════
+
+@login_required
+def confirm_availability(request, pk):
+    if not (is_shipping(request.user) or is_owner(request.user)):
+        messages.error(request, 'ليس لديك صلاحية')
+        return redirect('home')
+    invoice = get_object_or_404(Invoice, pk=pk)
+    if invoice.is_cancelled:
+        messages.error(request, 'لا يمكن تعديل فاتورة ملغية')
+        return redirect('invoice_detail', pk=pk)
+    if request.method == 'POST':
+        any_partial = False
+        for key, value in request.POST.items():
+            if key.startswith('qty_'):
+                item_id = key.split('_')[1]
+                try:
+                    item = invoice.items.get(pk=item_id)
+                    confirmed = int(value)
+                    if confirmed < 0:
+                        continue
+                    if confirmed < item.quantity:
+                        any_partial = True
+                    item.confirmed_quantity = confirmed
+                    item.save(update_fields=['confirmed_quantity'])
+                except (InvoiceItem.DoesNotExist, ValueError, IndexError):
+                    continue
+        invoice.revision_status = 'shipping_confirmed'
+        invoice.save(update_fields=['revision_status'])
+        if any_partial:
+            invoice.revision_status = 'pending_approval'
+            invoice.save(update_fields=['revision_status'])
+        if invoice.created_by:
+            Notification.objects.create(
+                invoice=invoice,
+                sender=request.user,
+                recipient=invoice.created_by,
+                notification_type='needs_approval' if any_partial else 'availability_confirmed',
+                message=f'تم تأكيد توفر المنتجات للفاتورة {invoice.invoice_number}'
+            )
+        messages.success(request, 'تم تأكيد التوفر بنجاح')
+    return redirect('invoice_detail', pk=pk)
+
+
+@login_required
+def approve_revision(request, pk):
+    if not (is_sales(request.user) or is_owner(request.user)):
+        messages.error(request, 'ليس لديك صلاحية')
+        return redirect('home')
+    invoice = get_object_or_404(Invoice, pk=pk)
+    action = request.POST.get('action', '')
+    UserModel = get_user_model()
+    if action == 'approve':
+        invoice.revision_status = 'approved'
+        invoice.save(update_fields=['revision_status'])
+        for item in invoice.items.all():
+            if item.confirmed_quantity is not None:
+                item.quantity = item.confirmed_quantity
+                item.total = item.quantity * item.unit_price
+                item.confirmed_quantity = None
+                item.save(update_fields=['quantity', 'total', 'confirmed_quantity'])
+        invoice.recalculate_total()
+        for user in UserModel.objects.filter(groups__name='shipping'):
+            Notification.objects.create(
+                invoice=invoice,
+                sender=request.user,
+                recipient=user,
+                notification_type='revision_approved',
+                message=f'تمت الموافقة على مراجعة الفاتورة {invoice.invoice_number}'
+            )
+        messages.success(request, 'تمت الموافقة على المراجعة')
+    elif action == 'reject':
+        invoice.revision_status = 'rejected'
+        invoice.save(update_fields=['revision_status'])
+        UserModel = get_user_model()
+        for user in UserModel.objects.filter(groups__name='shipping'):
+            Notification.objects.create(
+                invoice=invoice,
+                sender=request.user,
+                recipient=user,
+                notification_type='revision_rejected',
+                message=f'تم رفض مراجعة الفاتورة {invoice.invoice_number}'
+            )
+        messages.warning(request, 'تم رفض المراجعة')
+    return redirect('invoice_detail', pk=pk)

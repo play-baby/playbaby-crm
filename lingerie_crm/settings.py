@@ -15,12 +15,9 @@ except locale.Error:
 os.environ.setdefault('LANG', 'en_US.UTF-8')
 os.environ.setdefault('LC_ALL', 'en_US.UTF-8')
 
-SECRET_KEY = os.environ.get(
-    'DJANGO_SECRET_KEY',
-    'django-insecure-fzMFrhlvWwyPtoHHKxgnkQzeu5pHUSZreOlYgWeg9LN+xHWUaldQX1AEOpP6eSRc8S3bSEGwxhWCNQII9/JA/w=='
-)
+SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '*').split(',')
 
@@ -36,6 +33,7 @@ INSTALLED_APPS = [
     'customers',
     'products',
     'invoices',
+    'reports',
 ]
 
 MIDDLEWARE = [
@@ -117,7 +115,8 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SECURE_REFERRER_POLICY = 'same-origin'
-    CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
+    csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+    CSRF_TRUSTED_ORIGINS = [o.strip() for o in csrf_origins.split(',') if o.strip()]
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024

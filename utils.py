@@ -41,7 +41,20 @@ def export_xlsx(model_class, fields, filename):
     wb.save(response)
     return response
 
+XLSX_MAGIC = b'\x50\x4B\x03\x04'
+
+def _validate_file_upload(file, max_size_mb=5):
+    """Validate uploaded file: size, and basic content check."""
+    file.seek(0, 2)
+    size = file.tell()
+    file.seek(0)
+    if size > max_size_mb * 1024 * 1024:
+        raise ValueError(f'حجم الملف يتجاوز {max_size_mb} ميجابايت')
+    if size == 0:
+        raise ValueError('الملف فارغ')
+
 def import_csv(file, model_class, field_map):
+    _validate_file_upload(file)
     decoded = file.read().decode('utf-8-sig')
     reader = csv.DictReader(io.StringIO(decoded))
     count = 0
@@ -54,6 +67,12 @@ def import_csv(file, model_class, field_map):
     return count
 
 def import_xlsx(file, model_class, field_map):
+    _validate_file_upload(file)
+    file.seek(0)
+    head = file.read(4)
+    file.seek(0)
+    if head != XLSX_MAGIC:
+        raise ValueError('تنسيق الملف غير صالح - يجب رفع ملف Excel (.xlsx)')
     wb = openpyxl.load_workbook(file)
     ws = wb.active
     rows = list(ws.iter_rows(values_only=True))

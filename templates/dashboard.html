@@ -511,10 +511,10 @@ $(document).ready(function() {
     new Chart(ctx1, {
       type: 'line',
       data: {
-        labels: {{ monthly_labels|safe }},
+        labels: {{ monthly_labels_json|safe }},
         datasets: [{
           label: 'الإيرادات',
-          data: {{ monthly_revenue|safe }},
+          data: {{ monthly_revenue_json|safe }},
           borderColor: '#dc143c',
           backgroundColor: 'rgba(220,20,60,0.08)',
           fill: true, tension: 0.4,
@@ -526,7 +526,7 @@ $(document).ready(function() {
           borderWidth: 2.5,
         }, {
           label: 'المدفوعات',
-          data: {{ monthly_paid|safe }},
+          data: {{ monthly_paid_json|safe }},
           borderColor: '#00bcd4',
           backgroundColor: 'rgba(0,188,212,0.05)',
           fill: true, tension: 0.4,
@@ -556,9 +556,9 @@ $(document).ready(function() {
     new Chart(ctx2, {
       type: 'doughnut',
       data: {
-        labels: {{ payment_labels|safe }},
+        labels: {{ payment_labels_json|safe }},
         datasets: [{
-          data: {{ payment_values|safe }},
+          data: {{ payment_values_json|safe }},
           backgroundColor: ['#dc143c', '#ff9800', '#00bcd4', '#4caf50', '#9c27b0', '#607d8b'],
           borderWidth: 2,
           borderColor: '#141416',
@@ -614,10 +614,10 @@ $(document).ready(function() {
     new Chart(ctx4, {
       type: 'doughnut',
       data: {
-        labels: {{ status_labels|safe }},
+        labels: {{ status_labels_json|safe }},
         datasets: [{
-          data: {{ status_counts|safe }},
-          backgroundColor: {{ status_colors|safe }},
+          data: {{ status_counts_json|safe }},
+          backgroundColor: {{ status_colors_json|safe }},
           borderWidth: 2,
           borderColor: '#141416',
         }]

@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'home' %}">الرئيسية</a></li>
+<li class="breadcrumb-item"><a href="{% url 'reports:report_revenue' %}">التقارير</a></li>
+<li class="breadcrumb-item active">المنتجات</li>
+{% endblock %}
+{% block extra_css %}
+<style>
+  .report-nav .nav-link { color: rgba(255,255,255,0.6); border-radius: 10px; padding: 8px 16px; margin: 0 2px; font-weight: 600; font-size: 0.85rem; }
+  .report-nav .nav-link.active { background: var(--pb-red); color: #fff; }
+  .report-nav .nav-link:hover:not(.active) { background: rgba(220,20,60,0.1); color: var(--pb-red); }
+  .rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 6px; font-weight: 800; font-size: 0.7rem; }
+  .rank-1 { background: rgba(255,193,7,0.15); color: #ffc107; }
+  .rank-2 { background: rgba(192,192,192,0.12); color: #c0c0c0; }
+  .rank-3 { background: rgba(205,127,50,0.12); color: #cd7f32; }
+  .rank-default { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+  <div class="col-12">
+    <ul class="nav report-nav">
+      <li class="nav-item"><a class="nav-link" href="{% url 'reports:report_revenue' %}">الإيرادات</a></li>
+      <li class="nav-item"><a class="nav-link active" href="{% url 'reports:report_products' %}">المنتجات</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'reports:report_customers' %}">العملاء</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'reports:report_status' %}">حالات الفواتير</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'reports:report_shipping' %}">أداء الشحن</a></li>
+    </ul>
+  </div>
+</div>
+<div class="row">
+  <div class="col-lg-7 mb-3">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title"><i class="fas fa-chart-bar ml-1"></i>أفضل 50 منتج مبيعاً</h3></div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead><tr><th style="width:40px;">#</th><th>المنتج</th><th>الكمية المباعة</th><th>الإيرادات</th><th>عدد الفواتير</th></tr></thead>
+            <tbody>
+              {% for p in top_products %}
+              <tr>
+                <td><span class="rank-badge {% if forloop.counter <= 3 %}rank-{{ forloop.counter }}{% else %}rank-default{% endif %}">{{ forloop.counter }}</span></td>
+                <td>{{ p.product_name }}</td>
+                <td>{{ p.total_qty }}</td>
+                <td class="text-success">{{ p.total_rev|floatformat:2 }}</td>
+                <td>{{ p.invoice_count }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="5" class="text-center text-muted py-4">لا توجد بيانات</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card mb-3">
+      <div class="card-header"><h3 class="card-title"><i class="fas fa-chart-pie ml-1"></i>توزيع الإيرادات حسب التصنيف</h3></div>
+      <div class="card-body"><canvas id="categoryChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3 class="card-title"><i class="fas fa-info-circle ml-1"></i>ملخص</h3></div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between mb-2"><span class="text-muted">إجمالي الكميات المباعة:</span><strong style="color:#fff;">{{ total_qty_all }}</strong></div>
+        <div class="d-flex justify-content-between mb-2"><span class="text-muted">إجمالي إيرادات المنتجات:</span><strong class="text-success">{{ total_rev_all|floatformat:2 }}</strong></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+Chart.defaults.color = 'rgba(255,255,255,0.5)';
+Chart.defaults.font.family = 'Tajawal, sans-serif';
+var ctx = document.getElementById('categoryChart');
+if (ctx) {
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: {{ cat_labels_json|safe }},
+      datasets: [{
+        data: {{ cat_values_json|safe }},
+        backgroundColor: ['#dc143c', '#ff9800', '#00bcd4', '#4caf50', '#9c27b0', '#607d8b', '#e91e63', '#3f51b5'],
+        borderWidth: 2, borderColor: '#141416',
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true, aspectRatio: 1.2,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 10 } } } },
+      cutout: '60%',
+    }
+  });
+}
+</script>
+{% endblock %}

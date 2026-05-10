@@ -16,7 +16,9 @@ from datetime import date, timedelta
 import random
 
 # Create admin if not exists
-ADMIN_PASSWORD = os.environ.get('DJANGO_ADMIN_PASSWORD', 'playbaby123456')
+ADMIN_PASSWORD = os.environ.get('DJANGO_ADMIN_PASSWORD')
+if not ADMIN_PASSWORD:
+    raise RuntimeError('DJANGO_ADMIN_PASSWORD environment variable must be set to seed admin user')
 if not User.objects.filter(username='admin').exists():
     User.objects.create_superuser('admin', 'admin@playbaby.com', ADMIN_PASSWORD)
     print('✅ Admin user created')

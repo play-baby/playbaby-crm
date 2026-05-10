@@ -247,8 +247,13 @@
         <h5 class="modal-title"><i class="fas fa-times-circle ml-1"></i> إلغاء الفاتورة</h5>
         <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
       </div>
-      <form method="post" action="{% url 'cancel_invoice' form.instance.id %}">
+      {% if form.instance.pk %}
+      <form method="post" action="{% url 'cancel_invoice' form.instance.pk %}">
         {% csrf_token %}
+        {% else %}
+        <form method="post">
+        {% csrf_token %}
+        {% endif %}
         <div class="modal-body">
           <p>هل أنت متأكد من إلغاء الفاتورة <strong>{{ form.instance.invoice_number }}</strong>؟</p>
           <div class="form-group">

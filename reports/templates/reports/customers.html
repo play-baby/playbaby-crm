@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block page_title %}{{ page_title }}{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'home' %}">الرئيسية</a></li>
+<li class="breadcrumb-item"><a href="{% url 'reports:report_revenue' %}">التقارير</a></li>
+<li class="breadcrumb-item active">العملاء</li>
+{% endblock %}
+{% block extra_css %}
+<style>
+  .report-nav .nav-link { color: rgba(255,255,255,0.6); border-radius: 10px; padding: 8px 16px; margin: 0 2px; font-weight: 600; font-size: 0.85rem; }
+  .report-nav .nav-link.active { background: var(--pb-red); color: #fff; }
+  .report-nav .nav-link:hover:not(.active) { background: rgba(220,20,60,0.1); color: var(--pb-red); }
+  .rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 6px; font-weight: 800; font-size: 0.7rem; }
+  .rank-1 { background: rgba(255,193,7,0.15); color: #ffc107; }
+  .rank-2 { background: rgba(192,192,192,0.12); color: #c0c0c0; }
+  .rank-3 { background: rgba(205,127,50,0.12); color: #cd7f32; }
+  .rank-default { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+  <div class="col-12">
+    <ul class="nav report-nav">
+      <li class="nav-item"><a class="nav-link" href="{% url 'reports:report_revenue' %}">الإيرادات</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'reports:report_products' %}">المنتجات</a></li>
+      <li class="nav-item"><a class="nav-link active" href="{% url 'reports:report_customers' %}">العملاء</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'reports:report_status' %}">حالات الفواتير</a></li>
+      <li class="nav-item"><a class="nav-link" href="{% url 'reports:report_shipping' %}">أداء الشحن</a></li>
+    </ul>
+  </div>
+</div>
+<div class="row mb-3">
+  <div class="col-md-4 col-6 mb-2"><div class="card"><div class="card-body text-center"><div class="stat-box-value text-info" style="font-size:1.8rem;font-weight:800;">{{ total_customers }}</div><div class="text-muted" style="font-size:0.8rem;">إجمالي العملاء</div></div></div></div>
+  <div class="col-md-4 col-6 mb-2"><div class="card"><div class="card-body text-center"><div class="stat-box-value text-success" style="font-size:1.8rem;font-weight:800;">{{ customers_with_purchases }}</div><div class="text-muted" style="font-size:0.8rem;">عملاء لديهم مشتريات</div></div></div></div>
+  <div class="col-md-4 col-6 mb-2"><div class="card"><div class="card-body text-center"><div class="stat-box-value text-warning" style="font-size:1.8rem;font-weight:800;">{% widthratio customers_with_purchases total_customers 100 %}[%]{{ customers_with_purchases|yesno:",0" }}</div><div class="text-muted" style="font-size:0.8rem;">نسبة الشراء</div></div></div></div>
+</div>
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title"><i class="fas fa-crown ml-1"></i>أفضل 50 عميل</h3></div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead><tr><th style="width:40px;">#</th><th>العميل</th><th>إجمالي المشتريات</th><th>رقم الهاتف</th></tr></thead>
+            <tbody>
+              {% for c in top_customers %}
+              <tr>
+                <td><span class="rank-badge {% if forloop.counter <= 3 %}rank-{{ forloop.counter }}{% else %}rank-default{% endif %}">{{ forloop.counter }}</span></td>
+                <td><a href="{% url 'customer_detail' c.id %}">{{ c.name }}</a></td>
+                <td class="text-success font-weight-bold">{{ c.total_amount|floatformat:2 }} ج.م</td>
+                <td>{{ c.phone|default:"---" }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="4" class="text-center text-muted py-4">لا يوجد عملاء</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

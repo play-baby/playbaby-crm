@@ -1,4 +1,5 @@
-from django.shortcuts import render
+import json
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from datetime import timedelta
@@ -8,9 +9,23 @@ from products.models import Product
 from invoices.models import Invoice, InvoiceItem
 from django.db.models import Sum, F, ExpressionWrapper, DecimalField, Count
 from lingerie_crm.roles import is_owner
+from core.models import RoleLanding
 
 @login_required
 def dashboard(request):
+    # Non-owner users: redirect to their role landing page if dashboard is blocked
+    if not is_owner(request.user) and not request.user.is_superuser:
+        user_groups = request.user.groups.all()
+        for group in user_groups:
+            try:
+                rl = RoleLanding.objects.get(group=group)
+                if rl.dashboard_blocked:
+                    return redirect(rl.landing_page or 'customer_list')
+                if rl.landing_page:
+                    return redirect(rl.landing_page)
+            except RoleLanding.DoesNotExist:
+                pass
+
     is_owner_user = is_owner(request.user)
     today = timezone.now().date()
     first_of_month = today.replace(day=1)
@@ -114,17 +129,17 @@ def dashboard(request):
         'week_revenue': week_revenue,
         'week_count': week_count,
         'month_revenue': month_revenue,
-        # Charts
-        'monthly_labels': monthly_labels,
-        'monthly_revenue': monthly_revenue,
-        'monthly_paid': monthly_paid,
+        # Charts (JSON-serialized for safe template injection)
+        'monthly_labels_json': json.dumps(monthly_labels),
+        'monthly_revenue_json': json.dumps(monthly_revenue),
+        'monthly_paid_json': json.dumps(monthly_paid),
+        'payment_labels_json': json.dumps(payment_labels),
+        'payment_values_json': json.dumps(payment_values),
+        'status_labels_json': json.dumps(status_labels),
+        'status_counts_json': json.dumps(status_counts),
+        'status_colors_json': json.dumps(status_colors),
         'top_products': list(top_products),
         'top_customers': top_customers,
-        'payment_labels': payment_labels,
-        'payment_values': payment_values,
-        'status_labels': status_labels,
-        'status_counts': status_counts,
-        'status_colors': status_colors,
         'recent_invoices': recent_invoices,
         'low_stock_products': low_stock_products,
     }

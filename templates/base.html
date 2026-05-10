@@ -561,6 +561,14 @@
           <span class="nav-item-text">الفواتير</span>
         </a>
       </li>
+      <li class="nav-item">
+        <a href="{% url 'notification_list' %}" class="nav-link" title="الإشعارات">
+          <i class="fas fa-bell"></i>
+          {% if unread_notifications_count > 0 %}
+          <span class="badge badge-danger navbar-badge">{{ unread_notifications_count }}</span>
+          {% endif %}
+        </a>
+      </li>
       <li class="nav-item dropdown user-menu">
         <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
           <i class="fas fa-user-circle"></i>
@@ -616,6 +624,13 @@
             </a>
           </li>
           {% if is_owner or user.is_superuser %}
+          <li class="nav-header">التقارير</li>
+          <li class="nav-item">
+            <a href="{% url 'reports:report_revenue' %}" class="nav-link {% if request.resolver_match.app_name == 'reports' %}active{% endif %}">
+              <i class="nav-icon fas fa-chart-bar"></i>
+              <p>التقارير</p>
+            </a>
+          </li>
           <li class="nav-header">الإعدادات</li>
           <li class="nav-item has-treeview">
             <a href="#" class="nav-link">

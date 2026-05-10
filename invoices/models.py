@@ -5,7 +5,7 @@ from django.db.models import F
 from django.urls import reverse
 from django.db.models.signals import pre_save, post_save, post_delete
 from django.dispatch import receiver
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from customers.models import Customer
 from products.models import Product
 
@@ -51,6 +51,14 @@ class Invoice(models.Model):
     is_cancelled = models.BooleanField('ملغي', default=False)
     cancelled_at = models.DateTimeField('تاريخ الإلغاء', null=True, blank=True)
     cancel_reason = models.TextField('سبب الإلغاء', blank=True, null=True)
+    revision_status = models.CharField('حالة المراجعة', max_length=20, default='pending_shipping',
+        choices=[
+            ('pending_shipping', 'بانتظار تأكيد الشحن'),
+            ('shipping_confirmed', 'تم تأكيد الشحن'),
+            ('pending_approval', 'بانتظار موافقة المبيعات'),
+            ('approved', 'تمت الموافقة'),
+            ('rejected', 'مرفوض'),
+        ])
 
     class Meta:
         verbose_name = 'فاتورة'
@@ -128,6 +136,7 @@ class InvoiceItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='المنتج')
     product_name = models.CharField('اسم المنتج', max_length=200)
     quantity = models.IntegerField('الكمية', default=1)
+    confirmed_quantity = models.IntegerField('الكمية المؤكدة', null=True, blank=True, help_text='تؤكد من قبل الشحن')
     unit_price = models.DecimalField('سعر الوحدة', max_digits=10, decimal_places=2)
     total = models.DecimalField('الإجمالي', max_digits=10, decimal_places=2)
     discount_percent = models.DecimalField('خصم %', max_digits=5, decimal_places=2, default=0)
@@ -162,7 +171,51 @@ class InvoiceStatusLog(models.Model):
         ordering = ['-changed_at']
 
     def __str__(self):
-        return f'{self.invoice}: {self.from_status} → {self.to_status}'
+        return f'{self.invoice}: {self.from_status} \u2192 {self.to_status}'
+
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = [
+        ('new_invoice', 'فاتورة جديدة'),
+        ('availability_confirmed', 'تم تأكيد التوفر'),
+        ('revision_approved', 'تمت الموافقة على المراجعة'),
+        ('revision_rejected', 'تم رفض المراجعة'),
+        ('needs_approval', 'بانتظار الموافقة'),
+    ]
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='notifications', verbose_name='الفاتورة')
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_notifications', verbose_name='المرسل')
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_notifications', verbose_name='المستلم')
+    notification_type = models.CharField('النوع', max_length=30, choices=NOTIFICATION_TYPES)
+    message = models.TextField('الرسالة', blank=True)
+    is_read = models.BooleanField('مقروء', default=False)
+    created_at = models.DateTimeField('تاريخ الإنشاء', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'إشعار'
+        verbose_name_plural = 'الإشعارات'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.get_notification_type_display()} - {self.invoice.invoice_number}'
+
+
+@receiver(post_save, sender=Invoice)
+def notify_shipping_on_new_invoice(sender, instance, created, **kwargs):
+    """Auto-notify shipping group when a new invoice is created by sales."""
+    if created and instance.created_by:
+        from django.contrib.auth.models import Group as AuthGroup
+        try:
+            shipping_group = AuthGroup.objects.get(name='shipping')
+            for user in shipping_group.user_set.all():
+                Notification.objects.create(
+                    invoice=instance,
+                    sender=instance.created_by,
+                    recipient=user,
+                    notification_type='new_invoice',
+                    message=f'فاتورة جديدة {instance.invoice_number} من {instance.created_by.username}'
+                )
+        except AuthGroup.DoesNotExist:
+            pass
 
 
 @receiver(post_save, sender=Invoice)
