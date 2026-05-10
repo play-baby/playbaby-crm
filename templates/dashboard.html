@@ -1,137 +1,463 @@
 {% extends 'base.html' %}
-{% block title %}لوحة التحكم{% endblock %}
+{% block title %}Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…{% endblock %}
 {% block breadcrumb %}
-<li class="breadcrumb-item active">لوحة التحكم</li>
+<li class="breadcrumb-item active">Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…</li>
 {% endblock %}
+{% block extra_css %}
+<style>
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   DASHBOARD â€” PROFESSIONAL DARK THEME
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+
+/* â”€â”€ Metric Cards â”€â”€ */
+.metric-card {
+  background: linear-gradient(135deg, #141416, #1a1a1e) !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  opacity: 0.7;
+}
+.metric-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255,255,255,0.08) !important;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3) !important;
+}
+.metric-card .card-body { padding: 1.25rem 1.5rem !important; }
+.metric-card--red::before    { background: linear-gradient(90deg, #dc143c, #ff1744); }
+.metric-card--orange::before { background: linear-gradient(90deg, #e65100, #ff9800); }
+.metric-card--blue::before   { background: linear-gradient(90deg, #0097a7, #00bcd4); }
+.metric-card--green::before  { background: linear-gradient(90deg, #2e7d32, #4caf50); }
+.metric-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+.metric-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.15rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+.metric-icon--red    { background: linear-gradient(135deg, #dc143c, #ff1744); box-shadow: 0 4px 12px rgba(220,20,60,0.25); }
+.metric-icon--orange { background: linear-gradient(135deg, #e65100, #ff9800); box-shadow: 0 4px 12px rgba(255,152,0,0.25); }
+.metric-icon--blue   { background: linear-gradient(135deg, #0097a7, #00bcd4); box-shadow: 0 4px 12px rgba(0,188,212,0.25); }
+.metric-icon--green  { background: linear-gradient(135deg, #2e7d32, #4caf50); box-shadow: 0 4px 12px rgba(76,175,80,0.25); }
+.metric-change {
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.metric-change--up   { background: rgba(76,175,80,0.12); color: #4caf50; }
+.metric-change--down { background: rgba(220,20,60,0.12); color: #dc143c; }
+.metric-value {
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.2;
+  direction: ltr;
+}
+.metric-label {
+  color: rgba(255,255,255,0.45);
+  font-size: 0.78rem;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* â”€â”€ Mini Stats Row â”€â”€ */
+.mini-stat { text-align: center; padding: 12px 4px; border-left: 1px solid rgba(255,255,255,0.04); transition: background 0.2s; }
+.mini-stat:last-child { border-left: none; }
+.mini-stat:hover { background: rgba(220,20,60,0.03); border-radius: 8px; }
+.mini-stat-value { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.5px; }
+.mini-stat-label { font-size: 0.65rem; color: rgba(255,255,255,0.4); font-weight: 500; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* â”€â”€ Chart Cards â”€â”€ */
+.chart-card { border: 1px solid rgba(255,255,255,0.04) !important; border-radius: 16px !important; overflow: hidden; }
+.chart-card .card-header {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255,255,255,0.04) !important;
+  padding: 1rem 1.25rem !important;
+}
+.chart-card .card-title { font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+.chart-card .card-title i { color: var(--pb-red); font-size: 0.9rem; }
+.chart-card .card-body { padding: 0.5rem 1rem 1rem !important; }
+
+/* â”€â”€ Activity Feed â”€â”€ */
+.activity-feed { max-height: 360px; overflow-y: auto; }
+.activity-feed::-webkit-scrollbar { width: 3px; }
+.activity-feed::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+.activity-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  transition: background 0.2s;
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-item:hover { background: rgba(220,20,60,0.03); }
+.activity-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--pb-red);
+  flex-shrink: 0;
+  box-shadow: 0 0 8px rgba(220,20,60,0.3);
+}
+.activity-text { flex: 1; min-width: 0; line-height: 1.3; }
+.activity-text a { font-weight: 600; font-size: 0.82rem; }
+.activity-text a:hover { color: var(--pb-red-light); }
+.activity-meta { display: block; font-size: 0.68rem; color: rgba(255,255,255,0.3); margin-top: 1px; }
+.activity-amount { font-weight: 700; font-size: 0.78rem; color: #4caf50; white-space: nowrap; }
+
+/* â”€â”€ Stock Table â”€â”€ */
+.stock-table td { padding: 10px 12px !important; }
+.stock-table th { padding: 10px 12px !important; font-size: 0.75rem; }
+.stock-badge { font-size: 0.7rem; padding: 3px 10px; border-radius: 20px; font-weight: 700; }
+.stock-bar-track { height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+.stock-bar-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
+
+/* â”€â”€ Rank Badge â”€â”€ */
+.rank-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  font-weight: 800; font-size: 0.7rem;
+}
+.rank-1 { background: rgba(255,193,7,0.15); color: #ffc107; }
+.rank-2 { background: rgba(192,192,192,0.12); color: #c0c0c0; }
+.rank-3 { background: rgba(205,127,50,0.12); color: #cd7f32; }
+.rank-default { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); }
+
+/* â”€â”€ Financial Summary â”€â”€ */
+.fin-summary { padding: 0.5rem 0; }
+.fin-stat { text-align: center; }
+.fin-stat-icon {
+  width: 42px; height: 42px; border-radius: 12px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 1rem; color: #fff; margin-bottom: 8px;
+}
+.fin-stat-label { font-size: 0.72rem; color: rgba(255,255,255,0.4); font-weight: 500; }
+.fin-stat-value { font-size: 1.15rem; font-weight: 800; margin-top: 2px; }
+
+/* â”€â”€ Responsive â”€â”€ */
+@media (max-width: 575.98px) {
+  .metric-value { font-size: 1.2rem; }
+  .metric-icon { width: 36px; height: 36px; font-size: 0.95rem; }
+  .metric-card .card-body { padding: 1rem !important; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• TOP METRIC CARDS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <div class="row">
-  <div class="col-lg-3 col-6">
-    <div class="card stat-card">
-      <div class="card-body text-center py-4">
-        <div class="stat-icon bg-red-glow"><i class="fas fa-users"></i></div>
-        <h3 class="stat-number">{{ customers_count }}</h3>
-        <p class="stat-label">إجمالي العملاء</p>
+  <div class="col-lg-3 col-6 mb-3">
+    <div class="card metric-card metric-card--red">
+      <div class="card-body">
+        <div class="metric-top">
+          <div class="metric-icon metric-icon--red"><i class="fas fa-users"></i></div>
+          <span class="metric-change metric-change--up">+{{ customers_count }}</span>
+        </div>
+        <div class="metric-value"><span class="counter" data-target="{{ customers_count }}">0</span></div>
+        <div class="metric-label">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡</div>
       </div>
     </div>
   </div>
-  <div class="col-lg-3 col-6">
-    <div class="card stat-card">
-      <div class="card-body text-center py-4">
-        <div class="stat-icon bg-red-glow"><i class="fas fa-box"></i></div>
-        <h3 class="stat-number">{{ products_count }}</h3>
-        <p class="stat-label">إجمالي المنتجات</p>
-        {% if low_stock > 0 %}
-        <span class="badge badge-warning">{{ low_stock }} منتجات منخفضة</span>
+  <div class="col-lg-3 col-6 mb-3">
+    <div class="card metric-card metric-card--orange">
+      <div class="card-body">
+        <div class="metric-top">
+          <div class="metric-icon metric-icon--orange"><i class="fas fa-box"></i></div>
+          {% if low_stock > 0 %}
+          <span class="metric-change metric-change--down">{{ low_stock }} Ù…Ù†Ø®ÙØ¶</span>
+          {% else %}
+          <span class="metric-change metric-change--up">Ù…ØªÙˆÙØ±</span>
+          {% endif %}
+        </div>
+        <div class="metric-value"><span class="counter" data-target="{{ products_count }}">0</span></div>
+        <div class="metric-label">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-3 col-6 mb-3">
+    <div class="card metric-card metric-card--blue">
+      <div class="card-body">
+        <div class="metric-top">
+          <div class="metric-icon metric-icon--blue"><i class="fas fa-file-invoice"></i></div>
+          <span class="metric-change metric-change--up">{{ invoices_count }}</span>
+        </div>
+        <div class="metric-value"><span class="counter" data-target="{{ invoices_count }}">0</span></div>
+        <div class="metric-label">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„ÙÙˆØ§ØªÙŠØ±</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-3 col-6 mb-3">
+    <div class="card metric-card metric-card--green">
+      <div class="card-body">
+        <div class="metric-top">
+          <div class="metric-icon metric-icon--green"><i class="fas fa-money-bill-wave"></i></div>
+          <span class="metric-change metric-change--up">{{ total_revenue|floatformat:0 }} Ø¬.Ù…</span>
+        </div>
+        <div class="metric-value">{{ total_revenue|floatformat:2 }} <small style="font-size:0.5rem;font-weight:400;color:rgba(255,255,255,0.3);">Ø¬.Ù…</small></div>
+        <div class="metric-label">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• TODAY / WEEK / MONTH â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<div class="row mb-3">
+  <div class="col-12">
+    <div class="card chart-card">
+      <div class="card-body py-2">
+        <div class="row">
+          <div class="col-4 col-md-2 mini-stat">
+            <div class="mini-stat-value text-danger">{{ today_count }}</div>
+            <div class="mini-stat-label">ÙÙˆØ§ØªÙŠØ± Ø§Ù„ÙŠÙˆÙ…</div>
+          </div>
+          <div class="col-4 col-md-2 mini-stat">
+            <div class="mini-stat-value text-success">{{ today_revenue|floatformat:0 }}</div>
+            <div class="mini-stat-label">Ø¥ÙŠØ±Ø§Ø¯ Ø§Ù„ÙŠÙˆÙ…</div>
+          </div>
+          <div class="col-4 col-md-2 mini-stat">
+            <div class="mini-stat-value text-warning">{{ week_count }}</div>
+            <div class="mini-stat-label">ÙÙˆØ§ØªÙŠØ± Ø§Ù„Ø£Ø³Ø¨ÙˆØ¹</div>
+          </div>
+          <div class="col-4 col-md-2 mini-stat">
+            <div class="mini-stat-value text-info">{{ week_revenue|floatformat:0 }}</div>
+            <div class="mini-stat-label">Ø¥ÙŠØ±Ø§Ø¯ Ø§Ù„Ø£Ø³Ø¨ÙˆØ¹</div>
+          </div>
+          <div class="col-4 col-md-2 mini-stat">
+            <div class="mini-stat-value" style="color:#ba68c8;">{{ month_revenue|floatformat:0 }}</div>
+            <div class="mini-stat-label">Ø¥ÙŠØ±Ø§Ø¯ Ø§Ù„Ø´Ù‡Ø±</div>
+          </div>
+          <div class="col-4 col-md-2 mini-stat">
+            <div class="mini-stat-value {% if out_of_stock > 0 %}text-danger{% else %}text-success{% endif %}">{{ out_of_stock }}</div>
+            <div class="mini-stat-label">Ù†ÙØ¯ Ù…Ù† Ø§Ù„Ù…Ø®Ø²ÙˆÙ†</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• CHARTS ROW â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<div class="row mb-3">
+  <div class="col-lg-8 mb-3 mb-lg-0">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-chart-line"></i>Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª Ø§Ù„Ø´Ù‡Ø±ÙŠØ©</h3>
+        <div class="card-tools">
+          <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+        </div>
+      </div>
+      <div class="card-body">
+        <canvas id="revenueChart"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-chart-pie"></i>Ø·Ø±Ù‚ Ø§Ù„Ø¯ÙØ¹</h3>
+        <div class="card-tools">
+          <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+        </div>
+      </div>
+      <div class="card-body d-flex align-items-center">
+        <canvas id="paymentChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• LISTS ROW â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<div class="row mb-3">
+  <div class="col-lg-4 mb-3 mb-lg-0">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-clock"></i>Ø¢Ø®Ø± Ø§Ù„Ù†Ø´Ø§Ø·Ø§Øª</h3>
+        <div class="card-tools">
+          <a href="{% url 'invoice_list' %}" class="btn btn-sm" style="background:rgba(220,20,60,0.08);color:var(--pb-red);border-radius:8px;font-size:0.7rem;padding:3px 10px;">Ø¹Ø±Ø¶ Ø§Ù„ÙƒÙ„</a>
+        </div>
+      </div>
+      <div class="card-body p-0 activity-feed">
+        {% for inv in recent_invoices %}
+        <div class="activity-item">
+          <div class="activity-dot"></div>
+          <div class="activity-text">
+            <a href="{% url 'invoice_detail' inv.id %}">{{ inv.invoice_number }}</a>
+            <span class="activity-meta">{{ inv.customer.name|default:"---" }} Â· {{ inv.created_by.username|default:"?" }}</span>
+          </div>
+          <div class="activity-amount">{{ inv.total_amount|floatformat:2 }} Ø¬.Ù…</div>
+        </div>
+        {% empty %}
+        <div class="text-center text-muted py-4" style="font-size:0.85rem;">Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ù†Ø´Ø§Ø·Ø§Øª Ø­Ø¯ÙŠØ«Ø©</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4 mb-3 mb-lg-0">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i>ØªÙ†Ø¨ÙŠÙ‡Ø§Øª Ø§Ù„Ù…Ø®Ø²ÙˆÙ†</h3>
+        <div class="card-tools">
+          <a href="{% url 'product_list' %}" class="btn btn-sm" style="background:rgba(220,20,60,0.08);color:var(--pb-red);border-radius:8px;font-size:0.7rem;padding:3px 10px;">Ø¹Ø±Ø¶ Ø§Ù„ÙƒÙ„</a>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        {% if low_stock_products %}
+        <table class="table table-hover mb-0 stock-table">
+          <thead><tr><th>Ø§Ù„Ù…Ù†ØªØ¬</th><th>Ø§Ù„ÙƒÙ…ÙŠØ©</th><th></th></tr></thead>
+          <tbody>
+            {% for p in low_stock_products %}
+            <tr>
+              <td><a href="{% url 'product_detail' p.id %}" style="font-size:0.82rem;">{{ p.name }}</a></td>
+              <td>
+                <span class="stock-badge {% if p.quantity == 0 %}badge-danger{% elif p.quantity < 5 %}badge-warning{% else %}" style="background:rgba(0,188,212,0.15);color:#00bcd4;{% endif %}">{{ p.quantity }}</span>
+              </td>
+              <td style="width:40%;">
+                <div class="stock-bar-track">
+                  {% with max_qty=10 %}
+                  <div class="stock-bar-fill" style="width:{% widthratio p.quantity max_qty 100 %}%;background:{% if p.quantity == 0 %}#dc143c{% elif p.quantity < 5 %}#ff9800{% else %}#00bcd4{% endif %};"></div>
+                  {% endwith %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="text-center text-muted py-4">
+          <i class="fas fa-check-circle text-success" style="font-size:1.8rem;opacity:0.5;"></i>
+          <p class="mt-2" style="font-size:0.85rem;">Ø¬Ù…ÙŠØ¹ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ù…ØªÙˆÙØ±Ø© Ø¨Ø§Ù„Ù…Ø®Ø²ÙˆÙ†</p>
+        </div>
         {% endif %}
       </div>
     </div>
   </div>
-  <div class="col-lg-3 col-6">
-    <div class="card stat-card">
-      <div class="card-body text-center py-4">
-        <div class="stat-icon bg-red-glow"><i class="fas fa-file-invoice"></i></div>
-        <h3 class="stat-number">{{ invoices_count }}</h3>
-        <p class="stat-label">إجمالي الفواتير</p>
+  <div class="col-lg-4">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-crown"></i>Ø£ÙØ¶Ù„ Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡</h3>
+        <div class="card-tools">
+          <a href="{% url 'customer_list' %}" class="btn btn-sm" style="background:rgba(220,20,60,0.08);color:var(--pb-red);border-radius:8px;font-size:0.7rem;padding:3px 10px;">Ø¹Ø±Ø¶ Ø§Ù„ÙƒÙ„</a>
+        </div>
       </div>
-    </div>
-  </div>
-  <div class="col-lg-3 col-6">
-    <div class="card stat-card">
-      <div class="card-body text-center py-4">
-        <div class="stat-icon bg-red-glow"><i class="fas fa-money-bill-wave"></i></div>
-        <h3 class="stat-number">{{ total_revenue }} ج.م</h3>
-        <p class="stat-label">إجمالي الإيرادات</p>
+      <div class="card-body p-0">
+        {% if top_customers %}
+        <table class="table table-hover mb-0 stock-table">
+          <thead><tr><th style="width:40px;">#</th><th>Ø§Ù„Ø¹Ù…ÙŠÙ„</th><th>Ø§Ù„Ù…Ø´ØªØ±ÙŠØ§Øª</th></tr></thead>
+          <tbody>
+            {% for c in top_customers %}
+            <tr>
+              <td><span class="rank-badge rank-{{ forloop.counter }}">{{ forloop.counter }}</span></td>
+              <td><a href="{% url 'customer_detail' c.id %}" style="font-size:0.82rem;">{{ c.name }}</a></td>
+              <td class="font-weight-bold" style="color:#4caf50;font-size:0.82rem;">{{ c.total_amount|floatformat:2 }} Ø¬.Ù…</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="text-center text-muted py-4" style="font-size:0.85rem;">Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ø¹Ù…Ù„Ø§Ø¡</div>
+        {% endif %}
       </div>
     </div>
   </div>
 </div>
 
-<div class="row mt-4">
-  <div class="col-md-6">
-    <div class="card">
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• TOP PRODUCTS + STATUS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<div class="row mb-3">
+  <div class="col-lg-6 mb-3 mb-lg-0">
+    <div class="card chart-card h-100">
       <div class="card-header">
-        <h3 class="card-title">آخر العملاء</h3>
+        <h3 class="card-title"><i class="fas fa-chart-bar"></i>Ø£ÙØ¶Ù„ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ù…Ø¨ÙŠØ¹Ø§Ù‹</h3>
         <div class="card-tools">
-          <a href="{% url 'customer_list' %}" class="btn btn-sm btn-outline-danger">عرض الكل</a>
+          <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
         </div>
-      </div>
-      <div class="card-body p-0">
-        <table class="table table-hover mb-0">
-          <thead><tr><th>الاسم</th><th>رقم الهاتف</th><th>المشتريات</th></tr></thead>
-          <tbody>
-            {% for c in latest_customers %}
-            <tr><td><a href="{% url 'customer_detail' c.id %}">{{ c.name }}</a></td><td dir="ltr">{{ c.phone }}</td><td>{{ c.total_amount }} ج.م</td></tr>
-            {% empty %}
-            <tr><td colspan="3" class="text-center">لا يوجد عملاء</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-6">
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">آخر الفواتير</h3>
-        <div class="card-tools">
-          <a href="{% url 'invoice_list' %}" class="btn btn-sm btn-outline-danger">عرض الكل</a>
-        </div>
-      </div>
-      <div class="card-body p-0">
-        <table class="table table-hover mb-0">
-          <thead><tr><th>رقم الفاتورة</th><th>العميل</th><th>الإجمالي</th></tr></thead>
-          <tbody>
-            {% for inv in latest_invoices %}
-            <tr><td><a href="{% url 'invoice_detail' inv.id %}">{{ inv.invoice_number }}</a></td><td>{{ inv.customer.name|default:"---" }}</td><td>{{ inv.total_amount }} ج.م</td></tr>
-            {% empty %}
-            <tr><td colspan="3" class="text-center">لا يوجد فواتير</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="row mt-3">
-  <div class="col-md-12">
-    <div class="card">
-      <div class="card-header">
-        <h3 class="card-title">الملخص المالي</h3>
       </div>
       <div class="card-body">
+        {% if top_products %}
+        <canvas id="topProductsChart"></canvas>
+        {% else %}
+        <p class="text-muted text-center py-4" style="font-size:0.85rem;">Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª ÙƒØ§ÙÙŠØ©</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card chart-card h-100">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-tags"></i>Ø­Ø§Ù„Ø§Øª Ø§Ù„ÙÙˆØ§ØªÙŠØ±</h3>
+        <div class="card-tools">
+          <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+        </div>
+      </div>
+      <div class="card-body">
+        {% if status_labels %}
+        <canvas id="statusChart"></canvas>
+        {% else %}
+        <p class="text-muted text-center py-4" style="font-size:0.85rem;">Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª ÙƒØ§ÙÙŠØ©</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• FINANCIAL SUMMARY â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<div class="row">
+  <div class="col-12">
+    <div class="card chart-card">
+      <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-wallet"></i>Ø§Ù„Ù…Ù„Ø®Øµ Ø§Ù„Ù…Ø§Ù„ÙŠ</h3>
+      </div>
+      <div class="card-body fin-summary">
         <div class="row">
-          <div class="col-md-4 text-center">
-            <h5 class="text-muted">الإيرادات الكلية</h5>
-            <h3 class="text-success font-weight-bold">{{ total_revenue }} ج.م</h3>
+          <div class="col-md-4 mb-3 mb-md-0">
+            <div class="fin-stat">
+              <div class="fin-stat-icon" style="background:linear-gradient(135deg,#2e7d32,#4caf50);"><i class="fas fa-arrow-up"></i></div>
+              <div class="fin-stat-label">Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª Ø§Ù„ÙƒÙ„ÙŠØ©</div>
+              <div class="fin-stat-value text-success">{{ total_revenue|floatformat:2 }} Ø¬.Ù…</div>
+            </div>
           </div>
-          <div class="col-md-4 text-center">
-            <h5 class="text-muted">المدفوع</h5>
-            <h3 class="text-info font-weight-bold">{{ total_paid }} ج.م</h3>
+          <div class="col-md-4 mb-3 mb-md-0">
+            <div class="fin-stat">
+              <div class="fin-stat-icon" style="background:linear-gradient(135deg,#0097a7,#00bcd4);"><i class="fas fa-check"></i></div>
+              <div class="fin-stat-label">Ø§Ù„Ù…Ø¯ÙÙˆØ¹</div>
+              <div class="fin-stat-value text-info">{{ total_paid|floatformat:2 }} Ø¬.Ù…</div>
+            </div>
           </div>
-          <div class="col-md-4 text-center">
-            <h5 class="text-muted">المتبقي</h5>
-            <h3 class="text-danger font-weight-bold">{{ outstanding }} ج.م</h3>
+          <div class="col-md-4 mb-3 mb-md-0">
+            <div class="fin-stat">
+              <div class="fin-stat-icon" style="background:linear-gradient(135deg,#c62828,#e53935);"><i class="fas fa-clock"></i></div>
+              <div class="fin-stat-label">Ø§Ù„Ù…ØªØ¨Ù‚ÙŠ</div>
+              <div class="fin-stat-value text-danger">{{ outstanding|floatformat:2 }} Ø¬.Ù…</div>
+            </div>
           </div>
         </div>
         {% if is_owner %}
-        <hr style="border-color:#333;margin:20px 0;">
+        <hr style="border-color:rgba(255,255,255,0.06);margin:16px 0;">
         <div class="row">
-          <div class="col-md-3 text-center">
-            <h5 class="text-muted">صافي الربح</h5>
-            <h3 class="font-weight-bold" style="color:#ff9800;">{{ profit }} ج.م</h3>
+          <div class="col-6 col-md-3 mb-2 mb-md-0 text-center">
+            <div class="fin-stat-label">ØµØ§ÙÙŠ Ø§Ù„Ø±Ø¨Ø­</div>
+            <div class="fin-stat-value" style="color:#ff9800;">{{ profit|floatformat:2 }} Ø¬.Ù…</div>
           </div>
-          <div class="col-md-3 text-center">
-            <h5 class="text-muted">إجمالي التكلفة</h5>
-            <h3 class="text-warning font-weight-bold">{{ total_cost }} ج.م</h3>
+          <div class="col-6 col-md-3 mb-2 mb-md-0 text-center">
+            <div class="fin-stat-label">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„ØªÙƒÙ„ÙØ©</div>
+            <div class="fin-stat-value text-warning">{{ total_cost|floatformat:2 }} Ø¬.Ù…</div>
           </div>
-          <div class="col-md-3 text-center">
-            <h5 class="text-muted">نسبة الربح</h5>
-            <h3 class="font-weight-bold" style="color:#00bcd4;">{{ profit_margin|floatformat:1 }}%</h3>
+          <div class="col-6 col-md-3 mb-2 mb-md-0 text-center">
+            <div class="fin-stat-label">Ù†Ø³Ø¨Ø© Ø§Ù„Ø±Ø¨Ø­</div>
+            <div class="fin-stat-value" style="color:#00bcd4;">{{ profit_margin|floatformat:1 }}%</div>
           </div>
-          <div class="col-md-3 text-center">
-            <h5 class="text-muted">الفواتير غير المدفوعة</h5>
-            <h3 class="font-weight-bold" style="color:#e53935;">{{ unpaid_invoices_count }}</h3>
+          <div class="col-6 col-md-3 mb-2 mb-md-0 text-center">
+            <div class="fin-stat-label">ÙÙˆØ§ØªÙŠØ± ØºÙŠØ± Ù…Ø¯ÙÙˆØ¹Ø©</div>
+            <div class="fin-stat-value text-danger">{{ unpaid_invoices_count }}</div>
           </div>
         </div>
         {% endif %}
@@ -139,4 +465,174 @@
     </div>
   </div>
 </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+$(document).ready(function() {
+
+  // â”€â”€ Animated Counters â”€â”€
+  function animateCounters() {
+    $('.counter').each(function() {
+      var $this = $(this);
+      var target = parseFloat($this.data('target'));
+      if (target === 0) { $this.text('0'); return; }
+      var duration = 1000;
+      var startTime = null;
+      function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        var progress = Math.min((timestamp - startTime) / duration, 1);
+        var eased = 1 - Math.pow(1 - progress, 3);
+        var current = Math.floor(eased * target);
+        $this.text(current.toLocaleString('ar-EG'));
+        if (progress < 1) requestAnimationFrame(step);
+        else $this.text(target.toLocaleString('ar-EG'));
+      }
+      requestAnimationFrame(step);
+    });
+  }
+
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) { if (e.isIntersecting) { animateCounters(); observer.disconnect(); } });
+    }, { threshold: 0.1 });
+    observer.observe(document.querySelector('.metric-card'));
+  } else { animateCounters(); }
+
+  // â”€â”€ Chart.js Global â”€â”€
+  Chart.defaults.color = 'rgba(255,255,255,0.5)';
+  Chart.defaults.font.family = 'Tajawal, sans-serif';
+
+  // â”€â”€ 1. Revenue Line â”€â”€
+  var ctx1 = document.getElementById('revenueChart');
+  if (ctx1) {
+    new Chart(ctx1, {
+      type: 'line',
+      data: {
+        labels: {{ monthly_labels|safe }},
+        datasets: [{
+          label: 'Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª',
+          data: {{ monthly_revenue|safe }},
+          borderColor: '#dc143c',
+          backgroundColor: 'rgba(220,20,60,0.08)',
+          fill: true, tension: 0.4,
+          pointBackgroundColor: '#dc143c',
+          pointBorderColor: '#141416',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          borderWidth: 2.5,
+        }, {
+          label: 'Ø§Ù„Ù…Ø¯ÙÙˆØ¹Ø§Øª',
+          data: {{ monthly_paid|safe }},
+          borderColor: '#00bcd4',
+          backgroundColor: 'rgba(0,188,212,0.05)',
+          fill: true, tension: 0.4,
+          pointBackgroundColor: '#00bcd4',
+          pointBorderColor: '#141416',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          borderWidth: 2.5,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true, aspectRatio: 2,
+        plugins: { legend: { position: 'top', labels: { boxWidth: 10, padding: 12, font: { size: 11 } } } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { font: { size: 10 } } },
+          x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+        },
+        interaction: { intersect: false, mode: 'index' }
+      }
+    });
+  }
+
+  // â”€â”€ 2. Payment Doughnut â”€â”€
+  var ctx2 = document.getElementById('paymentChart');
+  if (ctx2) {
+    new Chart(ctx2, {
+      type: 'doughnut',
+      data: {
+        labels: {{ payment_labels|safe }},
+        datasets: [{
+          data: {{ payment_values|safe }},
+          backgroundColor: ['#dc143c', '#ff9800', '#00bcd4', '#4caf50', '#9c27b0', '#607d8b'],
+          borderWidth: 2,
+          borderColor: '#141416',
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true, aspectRatio: 1.2,
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 10 } } }
+        },
+        cutout: '68%',
+      }
+    });
+  }
+
+  // â”€â”€ 3. Top Products Horizontal Bar â”€â”€
+  var ctx3 = document.getElementById('topProductsChart');
+  {% if top_products %}
+  if (ctx3) {
+    new Chart(ctx3, {
+      type: 'bar',
+      data: {
+        labels: [{% for p in top_products %}'{{ p.product_name }}',{% endfor %}],
+        datasets: [{
+          label: 'Ø§Ù„ÙƒÙ…ÙŠØ© Ø§Ù„Ù…Ø¨Ø§Ø¹Ø©',
+          data: [{% for p in top_products %}{{ p.total_qty }},{% endfor %}],
+          backgroundColor: [
+            'rgba(220,20,60,0.7)', 'rgba(255,152,0,0.7)',
+            'rgba(0,188,212,0.7)', 'rgba(76,175,80,0.7)', 'rgba(156,39,176,0.7)'
+          ],
+          borderColor: ['#dc143c', '#ff9800', '#00bcd4', '#4caf50', '#9c27b0'],
+          borderWidth: 1,
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true, maintainAspectRatio: true, aspectRatio: 1.8,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { stepSize: 1, font: { size: 10 } } },
+          y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+        }
+      }
+    });
+  }
+  {% endif %}
+
+  // â”€â”€ 4. Status Doughnut â”€â”€
+  var ctx4 = document.getElementById('statusChart');
+  {% if status_labels %}
+  if (ctx4) {
+    new Chart(ctx4, {
+      type: 'doughnut',
+      data: {
+        labels: {{ status_labels|safe }},
+        datasets: [{
+          data: {{ status_counts|safe }},
+          backgroundColor: {{ status_colors|safe }},
+          borderWidth: 2,
+          borderColor: '#141416',
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true, aspectRatio: 1.8,
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { size: 10 } } }
+        },
+        cutout: '58%',
+      }
+    });
+  }
+  {% endif %}
+
+});
+</script>
 {% endblock %}
