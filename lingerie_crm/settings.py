@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'crispy_forms',
+    'axes',
     'core',
     'customers',
     'products',
@@ -82,7 +83,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 AXES_FAILURE_LIMIT = 5
-AXES_COOLOFF_TIME = 0.25  # 15 minutes
+AXES_COOLOFF_TIME = 0.25
 AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = True
 AXES_RESET_ON_SUCCESS = True
 
