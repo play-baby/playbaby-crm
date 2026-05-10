@@ -46,15 +46,15 @@
         <thead class="bg-light">
           <tr>
             <th class="d-none d-sm-table-cell">#</th>
-            <th>رقم الفاتورة</th>
-            <th>العميل</th>
-            <th class="d-none d-md-table-cell">التاريخ</th>
-            <th>حالة الطلب</th>
-            <th class="d-none d-lg-table-cell">طريقة الدفع</th>
-            <th>الإجمالي</th>
-            <th class="d-none d-sm-table-cell">المدفوع</th>
-            <th class="d-none d-sm-table-cell">المتبقي</th>
-            <th class="d-none d-lg-table-cell">تم بواسطة</th>
+            <th><a href="?sort=invoice_number&amp;dir={% if sort == 'invoice_number' and dir == 'asc' %}desc{% else %}asc{% endif %}{% if search %}&amp;search={{ search }}{% endif %}{% if page_obj.number != 1 %}&amp;page={{ page_obj.number }}{% endif %}" class="sort-link">رقم الفاتورة{% if sort == 'invoice_number' %} <i class="fas fa-sort-{% if dir == 'desc' %}down{% else %}up{% endif %}"></i>{% endif %}</a></th>
+            <th><a href="?sort=customer&amp;dir={% if sort == 'customer' and dir == 'asc' %}desc{% else %}asc{% endif %}{% if search %}&amp;search={{ search }}{% endif %}{% if page_obj.number != 1 %}&amp;page={{ page_obj.number }}{% endif %}" class="sort-link">العميل{% if sort == 'customer' %} <i class="fas fa-sort-{% if dir == 'desc' %}down{% else %}up{% endif %}"></i>{% endif %}</a></th>
+            <th class="d-none d-md-table-cell"><a href="?sort=date&amp;dir={% if sort == 'date' and dir == 'asc' %}desc{% else %}asc{% endif %}{% if search %}&amp;search={{ search }}{% endif %}" class="sort-link">التاريخ{% if sort == 'date' %} <i class="fas fa-sort-{% if dir == 'desc' %}down{% else %}up{% endif %}"></i>{% endif %}</a></th>
+            <th><a href="?sort=status&amp;dir={% if sort == 'status' and dir == 'asc' %}desc{% else %}asc{% endif %}{% if search %}&amp;search={{ search }}{% endif %}" class="sort-link">حالة الطلب{% if sort == 'status' %} <i class="fas fa-sort-{% if dir == 'desc' %}down{% else %}up{% endif %}"></i>{% endif %}</a></th>
+            <th class="d-none d-lg-table-cell"><a href="?sort=payment_method&amp;dir={% if sort == 'payment_method' and dir == 'asc' %}desc{% else %}asc{% endif %}{% if search %}&amp;search={{ search }}{% endif %}" class="sort-link">طريقة الدفع{% if sort == 'payment_method' %} <i class="fas fa-sort-{% if dir == 'desc' %}down{% else %}up{% endif %}"></i>{% endif %}</a></th>
+            <th><a href="?sort=total_amount&amp;dir={% if sort == 'total_amount' and dir == 'asc' %}desc{% else %}asc{% endif %}{% if search %}&amp;search={{ search }}{% endif %}" class="sort-link">الإجمالي{% if sort == 'total_amount' %} <i class="fas fa-sort-{% if dir == 'desc' %}down{% else %}up{% endif %}"></i>{% endif %}</a></th>
+            <th class="d-none d-sm-table-cell"><a href="?sort=paid_amount&amp;dir={% if sort == 'paid_amount' and dir == 'asc' %}desc{% else %}asc{% endif %}{% if search %}&amp;search={{ search }}{% endif %}" class="sort-link">المدفوع{% if sort == 'paid_amount' %} <i class="fas fa-sort-{% if dir == 'desc' %}down{% else %}up{% endif %}"></i>{% endif %}</a></th>
+            <th class="d-none d-sm-table-cell"><a href="?sort=remaining&amp;dir={% if sort == 'remaining' and dir == 'asc' %}desc{% else %}asc{% endif %}{% if search %}&amp;search={{ search }}{% endif %}" class="sort-link">المتبقي{% if sort == 'remaining' %} <i class="fas fa-sort-{% if dir == 'desc' %}down{% else %}up{% endif %}"></i>{% endif %}</a></th>
+            <th class="d-none d-lg-table-cell"><a href="?sort=created_by&amp;dir={% if sort == 'created_by' and dir == 'asc' %}desc{% else %}asc{% endif %}{% if search %}&amp;search={{ search }}{% endif %}" class="sort-link">تم بواسطة{% if sort == 'created_by' %} <i class="fas fa-sort-{% if dir == 'desc' %}down{% else %}up{% endif %}"></i>{% endif %}</a></th>
             <th>الإجراءات</th>
           </tr>
         </thead>
@@ -116,15 +116,15 @@
     <nav>
       <ul class="pagination justify-content-center mb-0">
         {% if page_obj.has_previous %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">السابق</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if sort %}&sort={{ sort }}&dir={{ dir }}{% endif %}">السابق</a></li>
         {% endif %}
         {% for num in page_obj.paginator.page_range %}
         <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-          <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}">{{ num }}</a>
+          <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if sort %}&sort={{ sort }}&dir={{ dir }}{% endif %}">{{ num }}</a>
         </li>
         {% endfor %}
         {% if page_obj.has_next %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}">التالي</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if sort %}&sort={{ sort }}&dir={{ dir }}{% endif %}">التالي</a></li>
         {% endif %}
       </ul>
     </nav>
