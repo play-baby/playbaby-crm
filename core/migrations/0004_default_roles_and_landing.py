@@ -6,7 +6,7 @@ def create_default_groups_and_landing(apps, schema_editor):
     RoleLanding = apps.get_model('core', 'RoleLanding')
 
     for group_name, landing_page, dashboard_blocked in [
-        ('sales', 'invoice_list', True),
+        ('sales', 'customer_list', True),
         ('shipping', 'customer_list', True),
         ('owner', '', False),
     ]:
