@@ -15,7 +15,7 @@ def dashboard(request):
     today = timezone.now().date()
     first_of_month = today.replace(day=1)
 
-    # â”€â”€ Overview Counts â”€â”€
+    # ── Overview Counts ──
     customers_count = Customer.objects.count()
     products_count = Product.objects.count()
     invoices_count = Invoice.objects.count()
@@ -24,7 +24,7 @@ def dashboard(request):
     low_stock = Product.objects.filter(quantity__lt=10).count()
     out_of_stock = Product.objects.filter(quantity=0).count()
 
-    # â”€â”€ Today / Week / Month KPIs â”€â”€
+    # ── Today / Week / Month KPIs ──
     today_invoices = Invoice.objects.filter(date=today)
     today_revenue = today_invoices.aggregate(t=Sum('total_amount'))['t'] or 0
     today_count = today_invoices.count()
@@ -37,7 +37,7 @@ def dashboard(request):
     month_invoices = Invoice.objects.filter(date__gte=first_of_month)
     month_revenue = month_invoices.aggregate(t=Sum('total_amount'))['t'] or 0
 
-    # â”€â”€ Monthly Revenue (last 6 months) â”€â”€
+    # ── Monthly Revenue (last 6 months) ──
     months_data = []
     for i in range(5, -1, -1):
         m = today.month - i
@@ -61,17 +61,17 @@ def dashboard(request):
     monthly_revenue = [m['revenue'] for m in months_data]
     monthly_paid = [m['paid'] for m in months_data]
 
-    # â”€â”€ Top 5 Products â”€â”€
+    # ── Top 5 Products ──
     top_products = (
         InvoiceItem.objects.values('product_name')
         .annotate(total_qty=Sum('quantity'), total_rev=Sum('total'))
         .order_by('-total_qty')[:5]
     )
 
-    # â”€â”€ Top 5 Customers â”€â”€
+    # ── Top 5 Customers ──
     top_customers = Customer.objects.filter(total_amount__gt=0).order_by('-total_amount')[:5]
 
-    # â”€â”€ Payment Method Distribution â”€â”€
+    # ── Payment Method Distribution ──
     payment_dist = (
         Invoice.objects.filter(payment_method__isnull=False)
         .values('payment_method__name')
@@ -81,7 +81,7 @@ def dashboard(request):
     payment_labels = [p['payment_method__name'] for p in payment_dist]
     payment_values = [float(p['total']) for p in payment_dist]
 
-    # â”€â”€ Invoice Status Distribution â”€â”€
+    # ── Invoice Status Distribution ──
     status_dist = (
         Invoice.objects.filter(status__isnull=False)
         .values('status__name', 'status__color')
@@ -92,10 +92,10 @@ def dashboard(request):
     status_counts = [s['count'] for s in status_dist]
     status_colors = [s['status__color'] for s in status_dist]
 
-    # â”€â”€ Latest Activity â”€â”€
+    # ── Latest Activity ──
     recent_invoices = Invoice.objects.select_related('customer', 'created_by').order_by('-created_at')[:8]
 
-    # â”€â”€ Low Stock Products â”€â”€
+    # ── Low Stock Products ──
     low_stock_products = Product.objects.filter(quantity__lt=10).order_by('quantity')[:10]
 
     context = {
@@ -107,7 +107,7 @@ def dashboard(request):
         'outstanding': total_revenue - total_paid,
         'low_stock': low_stock,
         'out_of_stock': out_of_stock,
-        'page_title': 'Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ…',
+        'page_title': 'لوحة التحكم',
         # KPIs
         'today_revenue': today_revenue,
         'today_count': today_count,
