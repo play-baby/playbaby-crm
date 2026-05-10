@@ -511,8 +511,8 @@
         <label class="small">الحالة</label>
         <select name="status" class="form-control form-control-sm">
           <option value="">-- الحالة --</option>
-          {% for s in statuses %}
-          <option value="{{ s.id }}" {% if invoice.status_id == s.id %}selected{% endif %}>{{ s.name }}</option>
+          {% for s in forward_statuses %}
+          <option value="{{ s.id }}">{{ s.name }}</option>
           {% endfor %}
         </select>
       </div>

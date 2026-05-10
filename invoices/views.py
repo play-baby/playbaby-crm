@@ -154,6 +154,10 @@ class InvoiceDetailView(LoginRequiredMixin, DetailView):
         ctx['all_statuses'] = InvoiceStatus.objects.exclude(name='ملغي').order_by('order')
         ctx['status_logs'] = self.object.status_logs.select_related('changed_by', 'from_status', 'to_status')[:20]
         ctx['payment_methods'] = PaymentMethod.objects.all()
+        if self.object.status:
+            ctx['forward_statuses'] = InvoiceStatus.objects.exclude(name='ملغي').filter(order__gt=self.object.status.order)
+        else:
+            ctx['forward_statuses'] = InvoiceStatus.objects.exclude(name='ملغي')
         return ctx
 
 class InvoicePrintView(LoginRequiredMixin, DetailView):

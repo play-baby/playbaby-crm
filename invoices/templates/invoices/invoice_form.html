@@ -41,10 +41,16 @@
           <p><strong>التاريخ:</strong> {{ form.instance.date|date:"Y-m-d" }}</p>
         </div>
         {% endif %}
+        <!-- Status: hidden field + read-only badge -->
+        <div style="display:none;">{{ form.status }}</div>
         <div class="col-4 col-md-2">
           <div class="form-group">
-            <label>{{ form.status.label }}</label>
-            {{ form.status }}
+            <label>حالة الطلب</label>
+            <div>
+              {% if form.instance.status %}
+              <span class="badge" style="background:{{ form.instance.status.color }};color:#fff;padding:6px 12px;font-size:0.85rem;">{{ form.instance.status.name }}</span>
+              {% else %}<span class="text-muted">---</span>{% endif %}
+            </div>
           </div>
         </div>
         <div class="col-4 col-md-2">
@@ -54,6 +60,21 @@
           </div>
         </div>
       </div>
+
+      <!-- Cancellation info / action -->
+      {% if form.instance.pk %}
+        {% if form.instance.is_cancelled %}
+        <div class="row mt-2">
+          <div class="col-12">
+            <div class="alert alert-danger text-center">
+              <h5 class="mb-1"><i class="fas fa-times-circle ml-1"></i> ملغي</h5>
+              <p class="mb-0"><strong>تاريخ الإلغاء:</strong> {{ form.instance.cancelled_at|date:"Y-m-d H:i" }}</p>
+              <p class="mb-0"><strong>سبب الإلغاء:</strong> {{ form.instance.cancel_reason }}</p>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      {% endif %}
 
       {% if not is_shipping %}
       <h5 class="mt-4 mb-3" style="color:#fff;font-size:0.95rem;">عناصر الفاتورة</h5>
@@ -167,12 +188,43 @@
       </div>
     </div>
     <div class="card-footer text-left">
-      <a href="{% url 'invoice_list' %}" class="btn btn-secondary btn-sm">إلغاء</a>
+      <a href="{% url 'invoice_list' %}" class="btn btn-secondary btn-sm">العودة</a>
+      {% if form.instance.pk and not form.instance.is_cancelled and is_sales %}
+      <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#cancelFormModal">
+        <i class="fas fa-times ml-1"></i> إلغاء الفاتورة
+      </button>
+      {% endif %}
       <button type="submit" class="btn btn-success btn-sm">
         <i class="fas fa-save ml-1"></i> {% if is_shipping %}تحديث الحالة{% else %}حفظ{% endif %}
       </button>
     </div>
   </form>
+</div>
+
+<!-- ===== CANCEL MODAL ===== -->
+<div class="modal fade" id="cancelFormModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#dc3545;color:#fff;">
+        <h5 class="modal-title"><i class="fas fa-times-circle ml-1"></i> إلغاء الفاتورة</h5>
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <form method="post" action="{% url 'cancel_invoice' form.instance.id %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <p>هل أنت متأكد من إلغاء الفاتورة <strong>{{ form.instance.invoice_number }}</strong>؟</p>
+          <div class="form-group">
+            <label for="cancelReason">سبب الإلغاء <span class="text-danger">*</span></label>
+            <textarea id="cancelReason" name="cancel_reason" class="form-control" rows="3" required placeholder="أدخل سبب الإلغاء..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">إغلاق</button>
+          <button type="submit" class="btn btn-danger">تأكيد الإلغاء</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 {% endblock %}
