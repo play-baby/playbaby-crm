@@ -298,6 +298,8 @@ def update_invoice_status(request, pk):
         status_id = request.POST.get('status')
         payment_id = request.POST.get('payment_method')
         collected = request.POST.get('is_collected')
+        old_status_id = invoice.status_id
+        was_collected = invoice.is_collected
         if status_id:
             new_status = get_object_or_404(InvoiceStatus, pk=status_id)
             if invoice.status and new_status.order <= invoice.status.order:
@@ -324,6 +326,27 @@ def update_invoice_status(request, pk):
                 invoice.collected_by = None
         invoice._changed_by = request.user
         invoice.save()
+        UserModel = get_user_model()
+        recipients = UserModel.objects.filter(
+            groups__name__in=['shipping', 'sales', 'owner']
+        ).exclude(pk=request.user.pk).distinct()
+        for user in recipients:
+            if status_id and str(status_id) != str(old_status_id):
+                Notification.objects.create(
+                    invoice=invoice,
+                    sender=request.user,
+                    recipient=user,
+                    notification_type='status_updated',
+                    message=f'تم تحديث حالة الفاتورة {invoice.invoice_number} إلى {new_status.name}'
+                )
+            elif collected == 'on' and not was_collected:
+                Notification.objects.create(
+                    invoice=invoice,
+                    sender=request.user,
+                    recipient=user,
+                    notification_type='collected',
+                    message=f'تم تحصيل الفاتورة {invoice.invoice_number} بالكامل'
+                )
         messages.success(request, f'تم تحديث حالة الفاتورة {invoice.invoice_number} بنجاح')
     return redirect('invoice_detail', pk=pk)
 
@@ -550,7 +573,7 @@ def confirm_collection(request, pk):
                     invoice=invoice,
                     sender=request.user,
                     recipient=user,
-                    notification_type='availability_confirmed',
+                    notification_type='collected',
                     message=f'تم تحصيل الفاتورة {invoice.invoice_number} بالكامل'
                 )
             messages.success(request, 'تم تأكيد التحصيل بنجاح')
@@ -669,7 +692,7 @@ def add_payment(request, pk):
                     invoice=invoice,
                     sender=request.user,
                     recipient=user,
-                    notification_type='availability_confirmed',
+                    notification_type='new_payment',
                     message=f'تمت إضافة دفعة جديدة ({payment.amount} ج.م) للفاتورة {invoice.invoice_number}'
                 )
             messages.success(request, f'تمت إضافة الدفعة ({payment.amount} ج.م) بنجاح')

@@ -185,6 +185,9 @@ class Notification(models.Model):
         ('revision_rejected', 'تم رفض المراجعة'),
         ('needs_approval', 'بانتظار الموافقة'),
         ('cancelled', 'إلغاء'),
+        ('new_payment', 'دفعة جديدة'),
+        ('collected', 'تم التحصيل'),
+        ('status_updated', 'تحديث الحالة'),
     ]
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='notifications', verbose_name='الفاتورة')
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_notifications', verbose_name='المرسل')
