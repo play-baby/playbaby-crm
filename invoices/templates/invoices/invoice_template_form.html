@@ -54,6 +54,11 @@
               <small class="text-muted">رسالة الشكر أسفل الفاتورة</small>
             </div>
             <div class="form-group">
+              <label>{{ form.phone.label }}</label>
+              {{ form.phone }}
+              <small class="text-muted">{{ form.phone.help_text }}</small>
+            </div>
+            <div class="form-group">
               <div class="custom-control custom-switch">
                 <input type="checkbox" class="custom-control-input" id="id_show_logo" name="show_logo" {% if form.show_logo.value %}checked{% endif %}>
                 <label class="custom-control-label" for="id_show_logo">{{ form.show_logo.label }}</label>

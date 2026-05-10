@@ -4,6 +4,7 @@ from django.contrib.auth.models import Group
 
 class SiteSetting(models.Model):
     logo = models.ImageField('شعار الموقع', upload_to='logo/', blank=True, null=True)
+    website = models.URLField('الموقع الإلكتروني', blank=True, null=True, help_text='مثال: https://playbaby.com')
 
     class Meta:
         verbose_name = 'إعدادات الموقع'
@@ -51,6 +52,7 @@ class InvoiceTemplate(models.Model):
     show_footer = models.BooleanField('إظهار التذييل', default=True)
     footer_message = models.CharField('رسالة التذييل', max_length=200, default='شكراً لتسوقكم معنا')
     invoice_title = models.CharField('عنوان الفاتورة', max_length=50, default='فاتورة')
+    phone = models.CharField('رقم الهاتف', max_length=30, blank=True, null=True, help_text='رقم الهاتف الظاهر أسفل اسم الشركة')
     font_family = models.CharField('الخط', max_length=50, default='Tajawal')
     header_size = models.IntegerField('حجم اسم الشركة', default=20)
     border_style = models.CharField('نمط الحدود', max_length=20, default='solid',

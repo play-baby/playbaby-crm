@@ -182,6 +182,7 @@ class InvoiceTemplateForm(forms.ModelForm):
             'company_name_color': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
             'footer_message': forms.TextInput(attrs={'class': 'form-control'}),
             'invoice_title': forms.TextInput(attrs={'class': 'form-control'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'مثال: 01234567890'}),
             'header_size': forms.NumberInput(attrs={'class': 'form-control', 'min': '14', 'max': '40'}),
             'custom_css': forms.Textarea(attrs={'class': 'form-control', 'rows': 8, 'dir': 'ltr', 'style': 'font-family:monospace;'}),
         }

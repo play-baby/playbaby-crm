@@ -252,7 +252,7 @@
       <img src="{{ site_logo }}" alt="Play Baby">
       {% endif %}
       <h2>Play Baby Lingerie</h2>
-      <p>{{ site_name }}</p>
+      <p>{{ invoice_template.phone|default:'' }}</p>
     </div>
     <div class="inv-meta">
       <h1>فاتورة</h1>
@@ -361,6 +361,7 @@
   <div class="inv-footer">
     <p>شكراً لتسوقكم معنا</p>
     <p>{{ site_name }} &copy; {{ current_year }}</p>
+    {% if site_website %}<p style="font-size:11px;color:var(--inv-muted);margin-top:4px;">{{ site_website }}</p>{% endif %}
   </div>
 
 </div>
