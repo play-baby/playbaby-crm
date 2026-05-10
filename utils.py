@@ -43,8 +43,15 @@ def export_xlsx(model_class, fields, filename):
 
 XLSX_MAGIC = b'\x50\x4B\x03\x04'
 
+ALLOWED_EXTENSIONS = {'.csv', '.xlsx'}
+CSV_MAGIC = b'\xef\xbb\xbf'
+
 def _validate_file_upload(file, max_size_mb=5):
-    """Validate uploaded file: size, and basic content check."""
+    """Validate uploaded file: extension, size, and basic content check."""
+    name = getattr(file, 'name', '')
+    ext = name[name.rfind('.'):].lower() if '.' in name else ''
+    if ext not in ALLOWED_EXTENSIONS:
+        raise ValueError(f'امتداد الملف "{ext}" غير مسموح. الامتدادات المسموحة: csv, xlsx')
     file.seek(0, 2)
     size = file.tell()
     file.seek(0)

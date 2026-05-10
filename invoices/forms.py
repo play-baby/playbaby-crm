@@ -199,7 +199,9 @@ class PaymentForm(forms.ModelForm):
 class InvoiceTemplateForm(forms.ModelForm):
     class Meta:
         model = InvoiceTemplate
-        fields = '__all__'
+        fields = ['primary_color', 'company_name_color', 'show_logo', 'show_footer',
+                  'footer_message', 'invoice_title', 'phone', 'phone_font_size',
+                  'phone_color', 'font_family', 'header_size', 'border_style', 'custom_css']
         widgets = {
             'primary_color': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
             'company_name_color': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),

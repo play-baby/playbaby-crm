@@ -518,6 +518,8 @@ def import_invoices(request):
         file = request.FILES['file']
         fmt = request.POST.get('format', 'csv')
         try:
+            from utils import _validate_file_upload
+            _validate_file_upload(file)
             if fmt == 'csv':
                 count = import_csv(file, Invoice, INVOICE_FIELD_MAP)
             else:

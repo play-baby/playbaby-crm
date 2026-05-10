@@ -1,10 +1,13 @@
 import subprocess, io, os as os_mod
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+
+DEPLOY_KEY = os_mod.environ.get('DEPLOY_KEY', '')
 
 @csrf_exempt
 def run_deploy(request):
-    if request.GET.get('key') != 'deploy123':
+    if not DEPLOY_KEY or request.GET.get('key') != DEPLOY_KEY:
         return HttpResponse('Forbidden', status=403)
     out = io.StringIO()
     out.write("=== Deploy started ===\n")
