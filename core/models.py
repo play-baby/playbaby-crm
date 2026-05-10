@@ -50,9 +50,11 @@ class InvoiceTemplate(models.Model):
     company_name_color = models.CharField('لون اسم الشركة', max_length=7, default='#dc143c')
     show_logo = models.BooleanField('إظهار الشعار', default=True)
     show_footer = models.BooleanField('إظهار التذييل', default=True)
-    footer_message = models.CharField('رسالة التذييل', max_length=200, default='شكراً لتسوقكم معنا')
+    footer_message = models.TextField('رسالة التذييل', default='شكراً لتسوقكم معنا', help_text='نص التذييل (يدعم عدة أسطر)')
     invoice_title = models.CharField('عنوان الفاتورة', max_length=50, default='فاتورة')
-    phone = models.CharField('رقم الهاتف', max_length=30, blank=True, null=True, help_text='رقم الهاتف الظاهر أسفل اسم الشركة')
+    phone = models.TextField('نص الترويسة', blank=True, null=True, help_text='نص يظهر أسفل اسم الشركة (يدعم عدة أسطر)')
+    phone_font_size = models.IntegerField('حجم نص الترويسة', default=11, help_text='حجم الخط (8-30)')
+    phone_color = models.CharField('لون نص الترويسة', max_length=7, default='#888888', help_text='مثال: #888888')
     font_family = models.CharField('الخط', max_length=50, default='Tajawal')
     header_size = models.IntegerField('حجم اسم الشركة', default=20)
     border_style = models.CharField('نمط الحدود', max_length=20, default='solid',

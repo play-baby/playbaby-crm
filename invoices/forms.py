@@ -203,9 +203,11 @@ class InvoiceTemplateForm(forms.ModelForm):
         widgets = {
             'primary_color': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
             'company_name_color': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
-            'footer_message': forms.TextInput(attrs={'class': 'form-control'}),
+            'footer_message': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'شكراً لتسوقكم معنا'}),
             'invoice_title': forms.TextInput(attrs={'class': 'form-control'}),
-            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'مثال: 01234567890'}),
+            'phone': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'نص يظهر أسفل اسم الشركة...'}),
+            'phone_font_size': forms.NumberInput(attrs={'class': 'form-control', 'min': '8', 'max': '30'}),
+            'phone_color': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
             'header_size': forms.NumberInput(attrs={'class': 'form-control', 'min': '14', 'max': '40'}),
             'custom_css': forms.Textarea(attrs={'class': 'form-control', 'rows': 8, 'dir': 'ltr', 'style': 'font-family:monospace;'}),
         }

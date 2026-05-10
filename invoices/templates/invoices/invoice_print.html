@@ -140,7 +140,7 @@
       <img src="{{ site_logo }}" alt="Play Baby">
       {% endif %}
       <h2>Play Baby Lingerie</h2>
-      <p>{{ invoice_template.phone|default:'' }}</p>
+      <p style="font-size:{{ invoice_template.phone_font_size|default:11 }}px;color:{{ invoice_template.phone_color|default:'#888' }};white-space:pre-line;margin:0;">{{ invoice_template.phone|default:'' }}</p>
     </div>
     <div class="inv-meta">
       <h1>{{ invoice_template.invoice_title }}</h1>
@@ -249,7 +249,7 @@
 
   <div class="inv-footer">
     {% if invoice_template.show_footer %}
-    <p>{{ invoice_template.footer_message }}</p>
+    <p style="white-space:pre-line;">{{ invoice_template.footer_message }}</p>
     {% endif %}
     <p>{{ site_name }} &copy; {{ current_year }}</p>
     {% if site_website %}<p style="font-size:11px;color:#888;margin-top:4px;">{{ site_website }}</p>{% endif %}

@@ -330,7 +330,7 @@
       <img src="{{ site_logo }}" alt="Play Baby">
       {% endif %}
       <h2>Play Baby Lingerie</h2>
-      <p>{{ invoice_template.phone|default:'' }}</p>
+      <p style="font-size:{{ invoice_template.phone_font_size|default:11 }}px;color:{{ invoice_template.phone_color|default:'#888' }};white-space:pre-line;margin:0;">{{ invoice_template.phone|default:'' }}</p>
     </div>
     <div class="inv-meta">
       <h1>فاتورة</h1>
@@ -486,7 +486,7 @@
     {% if invoice.is_cancelled %}
     <p style="color:#dc3545;font-weight:700;margin:0 0 6px;"><i class="fas fa-times-circle ml-1"></i> ملغي — {{ invoice.cancelled_at|date:"Y-m-d H:i" }} — {{ invoice.cancel_reason }}</p>
     {% endif %}
-    <p>شكراً لتسوقكم معنا</p>
+    <p style="white-space:pre-line;">{{ invoice_template.footer_message }}</p>
     <p>{{ site_name }} &copy; {{ current_year }}</p>
     {% if site_website %}<p style="font-size:11px;color:var(--inv-muted);margin-top:4px;">{{ site_website }}</p>{% endif %}
   </div>
