@@ -32,6 +32,8 @@ class InvoiceForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+        self._user = user
+        self.fields['status'].queryset = InvoiceStatus.objects.exclude(name='ملغي')
         if not kwargs.get('data') and not kwargs.get('instance'):
             self.fields['invoice_number'].initial = Invoice.generate_invoice_number()
         if user and is_shipping(user):
@@ -40,6 +42,15 @@ class InvoiceForm(forms.ModelForm):
             self.fields['paid_amount'].label = 'المبلغ المدفوع'
             self.fields['status'].required = False
             self.fields['payment_method'].required = False
+
+    def clean_status(self):
+        status = self.cleaned_data.get('status')
+        if self.instance and self.instance.pk and self.instance.status and status and status.pk != self.instance.status.pk:
+            if status.order <= self.instance.status.order:
+                user = getattr(self, '_user', None)
+                if not (user and is_owner(user)):
+                    raise forms.ValidationError('لا يمكن الرجوع إلى حالة سابقة')
+        return status
 
     def clean_paid_amount(self):
         paid = self.cleaned_data.get('paid_amount')

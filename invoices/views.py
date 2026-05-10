@@ -6,7 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
-from .models import Invoice, InvoiceItem, InvoiceStatus, PaymentMethod
+from django.utils.timezone import now
+from .models import Invoice, InvoiceItem, InvoiceStatus, InvoiceStatusLog, PaymentMethod
 from .forms import InvoiceForm, InvoiceItemFormSet, InvoiceStatusForm, PaymentMethodForm, InvoiceTemplateForm
 from core.models import InvoiceTemplate
 from products.models import Product
@@ -109,6 +110,7 @@ class InvoiceUpdateView(LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         user = self.request.user
+        form.instance._changed_by = user
         if is_shipping(user) and not (is_sales(user) or is_owner(user)):
             form.instance.invoice_number = Invoice.objects.get(pk=self.object.pk).invoice_number
             form.instance.customer = Invoice.objects.get(pk=self.object.pk).customer
@@ -148,7 +150,9 @@ class InvoiceDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['page_title'] = f'فاتورة {self.object.invoice_number}'
-        ctx['statuses'] = InvoiceStatus.objects.all()
+        ctx['statuses'] = InvoiceStatus.objects.exclude(name='ملغي')
+        ctx['all_statuses'] = InvoiceStatus.objects.exclude(name='ملغي').order_by('order')
+        ctx['status_logs'] = self.object.status_logs.select_related('changed_by', 'from_status', 'to_status')[:20]
         ctx['payment_methods'] = PaymentMethod.objects.all()
         return ctx
 
@@ -189,11 +193,19 @@ def update_invoice_status(request, pk):
         messages.error(request, 'ليس لديك صلاحية')
         return redirect('home')
     invoice = get_object_or_404(Invoice, pk=pk)
+    if invoice.is_cancelled:
+        messages.error(request, 'لا يمكن تعديل حالة طلب ملغي')
+        return redirect('invoice_detail', pk=pk)
     if request.method == 'POST':
         status_id = request.POST.get('status')
         payment_id = request.POST.get('payment_method')
         paid_amount = request.POST.get('paid_amount')
         if status_id:
+            new_status = get_object_or_404(InvoiceStatus, pk=status_id)
+            if invoice.status and new_status.order <= invoice.status.order:
+                if not is_owner(request.user):
+                    messages.error(request, 'لا يمكن الرجوع إلى حالة سابقة')
+                    return redirect('invoice_detail', pk=pk)
             invoice.status_id = status_id
         if payment_id:
             invoice.payment_method_id = payment_id
@@ -202,8 +214,33 @@ def update_invoice_status(request, pk):
                 invoice.paid_amount = float(paid_amount)
             except ValueError:
                 pass
+        invoice._changed_by = request.user
         invoice.save()
         messages.success(request, f'تم تحديث حالة الفاتورة {invoice.invoice_number} بنجاح')
+    return redirect('invoice_detail', pk=pk)
+
+
+# --- Cancel invoice ---
+@login_required
+def cancel_invoice(request, pk):
+    if not (is_sales(request.user) or is_owner(request.user)):
+        messages.error(request, 'ليس لديك صلاحية')
+        return redirect('home')
+    invoice = get_object_or_404(Invoice, pk=pk)
+    if invoice.is_cancelled:
+        messages.error(request, 'الفاتورة ملغية بالفعل')
+        return redirect('invoice_detail', pk=pk)
+    if request.method == 'POST':
+        reason = request.POST.get('cancel_reason', '').strip()
+        if not reason:
+            messages.error(request, 'يرجى إدخال سبب الإلغاء')
+            return redirect('invoice_detail', pk=pk)
+        invoice.is_cancelled = True
+        invoice.cancelled_at = now()
+        invoice.cancel_reason = reason
+        invoice._changed_by = request.user
+        invoice.save()
+        messages.success(request, f'تم إلغاء الفاتورة {invoice.invoice_number}')
     return redirect('invoice_detail', pk=pk)
 
 # --- Settings: Invoice Statuses ---

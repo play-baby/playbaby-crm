@@ -162,6 +162,14 @@
     {% endif %}
   </div>
 
+  {% if invoice.is_cancelled %}
+  <div style="background:#fff5f5;border:2px solid #dc3545;border-radius:8px;padding:10px 16px;margin-bottom:18px;text-align:center;">
+    <h5 style="color:#dc3545;font-weight:800;margin:0 0 4px;">ملغي</h5>
+    <p style="margin:2px 0;font-size:13px;"><strong>تاريخ الإلغاء:</strong> {{ invoice.cancelled_at|date:"Y-m-d H:i" }}</p>
+    <p style="margin:2px 0;font-size:13px;"><strong>سبب الإلغاء:</strong> {{ invoice.cancel_reason }}</p>
+  </div>
+  {% endif %}
+
   <div class="inv-summary">
     <div class="inv-summary-item"><strong>حالة الطلب:</strong>
       {% if invoice.status %}

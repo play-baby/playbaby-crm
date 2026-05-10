@@ -1,8 +1,9 @@
 from django.contrib import admin
-from .models import Invoice, InvoiceItem, InvoiceStatus, PaymentMethod
+from .models import Invoice, InvoiceItem, InvoiceStatus, PaymentMethod, InvoiceStatusLog
 
 admin.site.register(InvoiceStatus)
 admin.site.register(PaymentMethod)
+admin.site.register(InvoiceStatusLog)
 
 class InvoiceItemInline(admin.TabularInline):
     model = InvoiceItem

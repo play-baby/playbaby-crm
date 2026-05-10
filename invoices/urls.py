@@ -10,6 +10,7 @@ urlpatterns = [
     path('<int:pk>/delete/', views.InvoiceDeleteView.as_view(), name='invoice_delete'),
     path('api/product/', views.get_product_json, name='invoice_product_json'),
     path('<int:pk>/update-status/', views.update_invoice_status, name='update_invoice_status'),
+    path('<int:pk>/cancel/', views.cancel_invoice, name='cancel_invoice'),
     path('export/csv/', views.export_invoices_csv, name='invoice_export_csv'),
     path('export/xlsx/', views.export_invoices_xlsx, name='invoice_export_xlsx'),
     path('import/', views.import_invoices, name='invoice_import'),

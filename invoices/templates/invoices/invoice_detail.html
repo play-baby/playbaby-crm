@@ -163,6 +163,79 @@
     margin: 0;
   }
 
+  /* ===== STATUS PROGRESS ===== */
+  .status-progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 4px 0;
+  }
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .step-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    transition: all 0.3s;
+  }
+  .step.pending .step-circle {
+    background: #e0e0e0 !important;
+    color: #aaa;
+  }
+  .step.active .step-circle {
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.12);
+  }
+  .step-label {
+    margin-top: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #555;
+    white-space: nowrap;
+  }
+  .step.pending .step-label {
+    color: #ccc;
+  }
+  .connector {
+    height: 3px;
+    flex: 1;
+    min-width: 16px;
+    margin: 0 3px;
+    border-radius: 2px;
+  }
+  .connector.pending {
+    background: #e0e0e0 !important;
+  }
+  /* ===== CANCELLED BANNER ===== */
+  .cancelled-banner {
+    background: #fff5f5;
+    border: 2px solid #dc3545;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 18px;
+    text-align: center;
+  }
+  .cancelled-banner h5 {
+    color: #dc3545;
+    font-weight: 800;
+    margin: 0 0 4px;
+  }
+  .cancelled-banner p {
+    margin: 2px 0;
+    font-size: 13px;
+  }
+
   /* ===== PRINT ===== */
   @media print {
     html, body {
@@ -236,6 +309,11 @@
   {% if is_owner %}
   <a href="{% url 'invoice_delete' invoice.id %}" class="btn btn-danger btn-sm">حذف</a>
   {% endif %}
+  {% if not invoice.is_cancelled %}
+  <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#cancelModal">
+    <i class="fas fa-times ml-1"></i> إلغاء
+  </button>
+  {% endif %}
   {% elif is_shipping %}
   <a href="{% url 'invoice_edit' invoice.id %}" class="btn btn-warning btn-sm">تحديث الحالة</a>
   {% endif %}
@@ -276,10 +354,34 @@
     {% endif %}
   </div>
 
+  <!-- CANCELLED BANNER -->
+  {% if invoice.is_cancelled %}
+  <div class="cancelled-banner">
+    <h5><i class="fas fa-times-circle ml-1"></i> ملغي</h5>
+    <p><strong>تاريخ الإلغاء:</strong> {{ invoice.cancelled_at|date:"Y-m-d H:i" }}</p>
+    <p><strong>سبب الإلغاء:</strong> {{ invoice.cancel_reason }}</p>
+  </div>
+  {% endif %}
+
   <!-- STATUS SUMMARY -->
   <div class="inv-summary">
-    <div class="inv-summary-item"><strong>حالة الطلب:</strong>
-      {% if invoice.status %}
+    <div class="inv-summary-item" style="width:100%;">
+      <strong>حالة الطلب:</strong>
+      {% if invoice.status and all_statuses|length > 0 and not invoice.is_cancelled %}
+      <div class="status-progress">
+        {% for s in all_statuses %}
+        {% if not forloop.first %}
+        <div class="connector {% if s.order <= invoice.status.order %}completed{% else %}pending{% endif %}" style="background:{% if s.order <= invoice.status.order %}{{ s.color }}{% endif %};"></div>
+        {% endif %}
+        <div class="step">
+          <div class="step-circle {% if s.order < invoice.status.order %}completed{% elif s.order == invoice.status.order %}active{% else %}pending{% endif %}" style="background:{% if s.order <= invoice.status.order %}{{ s.color }}{% endif %};">
+            {% if s.order < invoice.status.order %}<i class="fas fa-check"></i>{% else %}{{ forloop.counter }}{% endif %}
+          </div>
+          <div class="step-label">{{ s.name }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% elif invoice.status %}
       <span class="status-badge" style="background:{{ invoice.status.color }};color:#fff;">{{ invoice.status.name }}</span>
       {% else %}<span style="color:var(--inv-muted);">---</span>{% endif %}
     </div>
@@ -372,8 +474,34 @@
 
 </div>
 
+<!-- ===== CANCEL MODAL ===== -->
+<div class="modal fade" id="cancelModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header" style="background:#dc3545;color:#fff;">
+        <h5 class="modal-title"><i class="fas fa-times-circle ml-1"></i> إلغاء الفاتورة</h5>
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <form method="post" action="{% url 'cancel_invoice' invoice.id %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <p>هل أنت متأكد من إلغاء الفاتورة <strong>{{ invoice.invoice_number }}</strong>؟</p>
+          <div class="form-group">
+            <label for="cancelReason">سبب الإلغاء <span class="text-danger">*</span></label>
+            <textarea id="cancelReason" name="cancel_reason" class="form-control" rows="3" required placeholder="أدخل سبب الإلغاء..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">إغلاق</button>
+          <button type="submit" class="btn btn-danger">تأكيد الإلغاء</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- ===== SHIPPING STATUS UPDATE (screen only) ===== -->
-{% if is_shipping and not is_sales %}
+{% if is_shipping and not is_sales and not invoice.is_cancelled %}
 <div class="no-print card mt-3" style="max-width:210mm;margin:16px auto !important;">
   <div class="card-header"><h5 class="card-title"><i class="fas fa-shipping-fast ml-2"></i> تحديث حالة الشحن</h5></div>
   <div class="card-body">

@@ -46,6 +46,9 @@ class Invoice(models.Model):
     notes = models.TextField('ملاحظات', blank=True, null=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='تم بواسطة')
     created_at = models.DateTimeField('تاريخ الإنشاء', auto_now_add=True)
+    is_cancelled = models.BooleanField('ملغي', default=False)
+    cancelled_at = models.DateTimeField('تاريخ الإلغاء', null=True, blank=True)
+    cancel_reason = models.TextField('سبب الإلغاء', blank=True, null=True)
 
     class Meta:
         verbose_name = 'فاتورة'
@@ -144,6 +147,22 @@ class InvoiceItem(models.Model):
         return self.total * (Decimal('1') - dp / Decimal('100'))
 
 
+class InvoiceStatusLog(models.Model):
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='status_logs', verbose_name='الفاتورة')
+    from_status = models.ForeignKey(InvoiceStatus, on_delete=models.SET_NULL, null=True, blank=True, related_name='+', verbose_name='من حالة')
+    to_status = models.ForeignKey(InvoiceStatus, on_delete=models.SET_NULL, null=True, blank=True, related_name='+', verbose_name='إلى حالة')
+    changed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='تم بواسطة')
+    changed_at = models.DateTimeField('تاريخ التغيير', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'سجل حالة الطلب'
+        verbose_name_plural = 'سجل حالات الطلبات'
+        ordering = ['-changed_at']
+
+    def __str__(self):
+        return f'{self.invoice}: {self.from_status} → {self.to_status}'
+
+
 @receiver(post_save, sender=Invoice)
 @receiver(post_delete, sender=Invoice)
 def update_customer_total(sender, instance, **kwargs):
@@ -196,3 +215,25 @@ def restore_stock_on_delete(sender, instance, **kwargs):
         Product.objects.filter(pk=instance.product_id).update(
             quantity=F('quantity') + instance.quantity
         )
+
+
+@receiver(pre_save, sender=Invoice)
+def capture_old_status(sender, instance, **kwargs):
+    if instance.pk:
+        old = Invoice.objects.get(pk=instance.pk)
+        instance._old_status_id = old.status_id
+    else:
+        instance._old_status_id = None
+
+
+@receiver(post_save, sender=Invoice)
+def log_status_change(sender, instance, created, **kwargs):
+    if not created:
+        old_status_id = getattr(instance, '_old_status_id', None)
+        if old_status_id != instance.status_id:
+            InvoiceStatusLog.objects.create(
+                invoice=instance,
+                from_status_id=old_status_id,
+                to_status=instance.status,
+                changed_by=getattr(instance, '_changed_by', None),
+            )
