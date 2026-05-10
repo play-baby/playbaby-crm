@@ -1,8 +1,6 @@
 import json
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import LoginView
-from django.contrib.auth import authenticate, login
 from django.utils import timezone
 from datetime import timedelta
 import calendar
@@ -12,23 +10,6 @@ from invoices.models import Invoice, InvoiceItem
 from django.db.models import Sum, F, ExpressionWrapper, DecimalField, Count
 from lingerie_crm.roles import is_owner
 from core.models import RoleLanding
-from .rate_limit import login_rate_limit, record_failed_attempt, clear_attempts
-
-
-class RateLimitedLoginView(LoginView):
-    template_name = 'registration/login.html'
-
-    @login_rate_limit
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
-
-    def form_invalid(self, form):
-        record_failed_attempt(self.request)
-        return super().form_invalid(form)
-
-    def form_valid(self, form):
-        clear_attempts(self.request)
-        return super().form_valid(form)
 
 @login_required
 def dashboard(request):

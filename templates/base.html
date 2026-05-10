@@ -637,6 +637,9 @@
           <span class="d-none d-md-inline mr-2">{{ user.username }}</span>
         </a>
         <div class="dropdown-menu dropdown-menu-left">
+          <a href="{% url 'password_change' %}" class="dropdown-item">
+            <i class="fas fa-key ml-2"></i> تغيير كلمة المرور
+          </a>
           <div class="dropdown-divider"></div>
           <form method="post" action="{% url 'logout' %}" style="display:inline;">
             {% csrf_token %}

@@ -63,7 +63,15 @@ def run_deploy(request):
         )
         out.write(f"STDOUT: {result.stdout}\nSTDERR: {result.stderr}\nExit: {result.returncode}\n")
 
-    # Step 4: migrate
+    # Step 4: install/update dependencies
+    out.write("--- pip install ---\n")
+    result = subprocess.run(
+        [python_bin, '-m', 'pip', 'install', '-r', f'{project_dir}/requirements.txt', '--quiet'],
+        capture_output=True, text=True, cwd=project_dir
+    )
+    out.write(f"STDOUT: {result.stdout}\nSTDERR: {result.stderr}\nExit: {result.returncode}\n")
+
+    # Step 5: migrate
     out.write("--- migrate ---\n")
     result = subprocess.run(
         [python_bin, f'{project_dir}/manage.py', 'migrate', '--verbosity', '3'],
