@@ -10,8 +10,8 @@ from django.http import JsonResponse
 from django.utils.timezone import now
 from decimal import Decimal
 from django.db.models import Sum, Q
-from .models import Invoice, InvoiceItem, InvoiceStatus, InvoiceStatusLog, PaymentMethod, Notification
-from .forms import InvoiceForm, InvoiceItemFormSet, InvoiceStatusForm, PaymentMethodForm, InvoiceTemplateForm
+from .models import Invoice, InvoiceItem, InvoiceStatus, InvoiceStatusLog, PaymentMethod, Notification, Payment
+from .forms import InvoiceForm, InvoiceItemFormSet, InvoiceStatusForm, PaymentMethodForm, InvoiceTemplateForm, PaymentForm
 from core.models import InvoiceTemplate
 from products.models import Product
 from utils import export_csv, export_xlsx, import_csv, import_xlsx
@@ -247,6 +247,9 @@ class InvoiceDetailView(LoginRequiredMixin, DetailView):
             revised_items_total += line_net
         inv_dp = invoice.discount_percent or Decimal('0')
         ctx['revised_total_preview'] = revised_items_total * (Decimal('1') - inv_dp / Decimal('100'))
+        # Payments
+        ctx['payments'] = invoice.payments.select_related('created_by', 'payment_method').all()
+        ctx['payment_form'] = PaymentForm()
         return ctx
 
 class InvoicePrintView(LoginRequiredMixin, DetailView):
@@ -534,6 +537,42 @@ def notification_mark_all_read(request):
     Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
     messages.success(request, 'تم تحديد الكل كمقروء')
     return redirect('notification_list')
+
+
+# ═══════════════════════════════════════════════
+# PAYMENT (INSTALLMENTS)
+# ═══════════════════════════════════════════════
+
+@login_required
+def add_payment(request, pk):
+    if not (is_sales(request.user) or is_owner(request.user)):
+        messages.error(request, 'ليس لديك صلاحية')
+        return redirect('home')
+    invoice = get_object_or_404(Invoice, pk=pk)
+    if request.method == 'POST':
+        form = PaymentForm(request.POST)
+        if form.is_valid():
+            payment = form.save(commit=False)
+            payment.invoice = invoice
+            payment.created_by = request.user
+            payment.save()
+            # Notify relevant users about the new payment
+            UserModel = get_user_model()
+            recipients = UserModel.objects.filter(
+                groups__name__in=['shipping', 'sales', 'owner']
+            ).exclude(pk=request.user.pk).distinct()
+            for user in recipients:
+                Notification.objects.create(
+                    invoice=invoice,
+                    sender=request.user,
+                    recipient=user,
+                    notification_type='availability_confirmed',
+                    message=f'تمت إضافة دفعة جديدة ({payment.amount} ج.م) للفاتورة {invoice.invoice_number}'
+                )
+            messages.success(request, f'تمت إضافة الدفعة ({payment.amount} ج.م) بنجاح')
+        else:
+            messages.error(request, 'خطأ في إضافة الدفعة')
+    return redirect('invoice_detail', pk=pk)
 
 
 # ═══════════════════════════════════════════════

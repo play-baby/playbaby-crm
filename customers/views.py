@@ -4,6 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.contrib import messages
+from django.db.models import Sum
 from .models import Customer
 from .forms import CustomerForm
 from utils import export_csv, export_xlsx, import_csv, import_xlsx
@@ -75,6 +76,10 @@ class CustomerDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['page_title'] = self.object.name
+        from invoices.models import Invoice
+        ctx['invoices'] = Invoice.objects.filter(customer=self.object).select_related('status', 'payment_method').order_by('-date')[:20]
+        ctx['total_paid_invoices'] = ctx['invoices'].aggregate(Sum('paid_amount'))['paid_amount__sum'] or 0
+        ctx['total_invoices_amount'] = ctx['invoices'].aggregate(Sum('total_amount'))['total_amount__sum'] or 0
         return ctx
 
 class CustomerDeleteView(OwnerRequiredMixin, DeleteView):

@@ -33,4 +33,6 @@ urlpatterns = [
     # Shipping availability
     path('<int:pk>/confirm-availability/', views.confirm_availability, name='confirm_availability'),
     path('<int:pk>/approve-revision/', views.approve_revision, name='approve_revision'),
+    # Payments
+    path('<int:pk>/add-payment/', views.add_payment, name='add_payment'),
 ]

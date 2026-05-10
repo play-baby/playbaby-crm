@@ -1,7 +1,7 @@
 from decimal import Decimal
 from django.db import models
 from django.conf import settings
-from django.db.models import F
+from django.db.models import F, Sum
 from django.urls import reverse
 from django.db.models.signals import pre_save, post_save, post_delete
 from django.dispatch import receiver
@@ -200,6 +200,24 @@ class Notification(models.Model):
         return f'{self.get_notification_type_display()} - {self.invoice.invoice_number}'
 
 
+class Payment(models.Model):
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='payments', verbose_name='الفاتورة')
+    amount = models.DecimalField('المبلغ', max_digits=12, decimal_places=2)
+    date = models.DateField('تاريخ الدفع')
+    payment_method = models.ForeignKey(PaymentMethod, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='طريقة الدفع')
+    notes = models.TextField('ملاحظات', blank=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='تم بواسطة')
+    created_at = models.DateTimeField('تاريخ الإنشاء', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'دفعة'
+        verbose_name_plural = 'الدفعات'
+        ordering = ['-date', '-created_at']
+
+    def __str__(self):
+        return f'{self.invoice.invoice_number} - {self.amount} ج.م'
+
+
 @receiver(post_save, sender=Invoice)
 def notify_shipping_on_new_invoice(sender, instance, created, **kwargs):
     """Auto-notify shipping group when a new invoice is created by sales."""
@@ -271,6 +289,18 @@ def restore_stock_on_delete(sender, instance, **kwargs):
         Product.objects.filter(pk=instance.product_id).update(
             quantity=F('quantity') + instance.quantity
         )
+
+
+@receiver(post_save, sender=Payment)
+@receiver(post_delete, sender=Payment)
+def update_invoice_paid_amount(sender, instance, **kwargs):
+    """Keep Invoice.paid_amount in sync with sum of payments."""
+    invoice = instance.invoice
+    total = invoice.payments.aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
+    if total > invoice.total_amount:
+        total = invoice.total_amount
+    if invoice.paid_amount != total:
+        Invoice.objects.filter(pk=invoice.pk).update(paid_amount=total)
 
 
 @receiver(pre_save, sender=Invoice)

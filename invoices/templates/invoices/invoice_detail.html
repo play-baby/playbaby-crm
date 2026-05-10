@@ -704,5 +704,80 @@ document.querySelectorAll('.not-available-check').forEach(function(chk) {
   </div>
 </div>
 {% endif %}
+
+<!-- ===== PAYMENTS / INSTALLMENTS SECTION ===== -->
+<div class="no-print card mt-3" style="max-width:210mm;margin:16px auto !important;">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="card-title"><i class="fas fa-money-bill-wave ml-2"></i> الدفعات</h5>
+    <span>المتبقي: <strong style="color:var(--pb-red);">{{ invoice.remaining_amount|floatformat:2 }} ج.م</strong></span>
+  </div>
+  <div class="card-body">
+    {% if payments %}
+    <table class="table table-sm table-bordered mb-3">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>المبلغ</th>
+          <th>التاريخ</th>
+          <th>طريقة الدفع</th>
+          <th>ملاحظات</th>
+          <th>تم بواسطة</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in payments %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td class="font-weight-bold">{{ p.amount|floatformat:2 }} ج.م</td>
+          <td>{{ p.date|date:"Y-m-d" }}</td>
+          <td>{{ p.payment_method.name|default:"---" }}</td>
+          <td>{{ p.notes|default:"---" }}</td>
+          <td>{{ p.created_by.username|default:"---" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="text-muted text-center mb-3">لا توجد دفعات مسجلة</p>
+    {% endif %}
+
+    {% if is_sales and not invoice.is_cancelled and invoice.remaining_amount > 0 %}
+    <hr style="border-color:#333;margin:12px 0;">
+    <h6 style="color:#fff;font-weight:700;margin-bottom:10px;"><i class="fas fa-plus ml-1"></i> إضافة دفعة جديدة</h6>
+    <form method="post" action="{% url 'add_payment' invoice.id %}">
+      {% csrf_token %}
+      <div class="row">
+        <div class="col-4 col-md-3">
+          <div class="form-group">
+            <label class="small">{{ payment_form.amount.label }}</label>
+            {{ payment_form.amount }}
+          </div>
+        </div>
+        <div class="col-4 col-md-3">
+          <div class="form-group">
+            <label class="small">{{ payment_form.date.label }}</label>
+            {{ payment_form.date }}
+          </div>
+        </div>
+        <div class="col-4 col-md-3">
+          <div class="form-group">
+            <label class="small">{{ payment_form.payment_method.label }}</label>
+            {{ payment_form.payment_method }}
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="form-group">
+            <label class="small">{{ payment_form.notes.label }}</label>
+            {{ payment_form.notes }}
+          </div>
+        </div>
+        <div class="col-12">
+          <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-save ml-1"></i> إضافة دفعة</button>
+        </div>
+      </div>
+    </form>
+    {% endif %}
+  </div>
+</div>
 {% endblock %}
 {% block extra_js %}{% endblock %}

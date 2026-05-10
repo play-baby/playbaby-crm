@@ -12,7 +12,7 @@
         {% if customer.image %}
         <img src="{{ customer.image.url }}" alt="{{ customer.name }}" style="width:150px;height:150px;border-radius:50%;object-fit:cover;border:4px solid #f0f0f0;">
         {% else %}
-        <div style="width:150px;height:150px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:4rem;color:#999;">
+        <div style="width:150px;height:150px;border-radius:50%;background:var(--pb-gray);display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:4rem;color:#555;">
           <i class="fas fa-user"></i>
         </div>
         {% endif %}
@@ -61,7 +61,7 @@
           {% endif %}
           <tr>
             <th>إجمالي المشتريات</th>
-            <td class="font-weight-bold text-success">{{ customer.total_amount|default:"0" }} ج.م</td>
+            <td class="font-weight-bold" style="color:var(--pb-red);">{{ customer.total_amount|default:"0" }} ج.م</td>
           </tr>
           {% if customer.last_purchase_date %}
           <tr>
@@ -83,6 +83,43 @@
             <th>آخر تحديث</th>
             <td>{{ customer.updated_at|date:"Y-m-d h:i A" }}</td>
           </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Related Invoices -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h3 class="card-title">الفواتير</h3>
+        <div style="display:flex;gap:15px;font-size:13px;">
+          <span>الإجمالي: <strong style="color:var(--pb-red);">{{ total_invoices_amount|floatformat:2 }} ج.م</strong></span>
+          <span>المدفوع: <strong style="color:#4caf50;">{{ total_paid_invoices|floatformat:2 }} ج.م</strong></span>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-sm table-hover mb-0">
+          <thead>
+            <tr>
+              <th>رقم الفاتورة</th>
+              <th>التاريخ</th>
+              <th>الإجمالي</th>
+              <th>المدفوع</th>
+              <th>الحالة</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for inv in invoices %}
+            <tr>
+              <td><a href="{% url 'invoice_detail' inv.id %}">{{ inv.invoice_number }}</a></td>
+              <td>{{ inv.date|date:"Y-m-d" }}</td>
+              <td>{{ inv.total_amount|floatformat:2 }}</td>
+              <td>{{ inv.paid_amount|floatformat:2 }}</td>
+              <td>{% if inv.is_cancelled %}<span class="badge badge-danger">ملغي</span>{% elif inv.status %}<span class="badge" style="background:{{ inv.status.color }};color:#fff;">{{ inv.status.name }}</span>{% else %}---{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center text-muted py-3">لا توجد فواتير لهذا العميل</td></tr>
+            {% endfor %}
+          </tbody>
         </table>
       </div>
     </div>
