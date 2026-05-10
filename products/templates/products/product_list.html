@@ -49,11 +49,11 @@
           <tr>
             <th>#</th>
             <th>الصورة</th>
-            <th>الاسم</th>
-            <th>التصنيف</th>
-            <th>السعر</th>
-            <th>الكمية</th>
-            <th>تاريخ الإضافة</th>
+            <th><a href="?sort=name&amp;dir={% if sort == 'name' and dir == 'asc' %}desc{% else %}asc{% endif %}{% if search %}&amp;search={{ search }}{% endif %}" class="sort-link">الاسم{% if sort == 'name' %} <i class="fas fa-sort-{% if dir == 'desc' %}down{% else %}up{% endif %}"></i>{% endif %}</a></th>
+            <th><a href="?sort=category&amp;dir={% if sort == 'category' and dir == 'asc' %}desc{% else %}asc{% endif %}{% if search %}&amp;search={{ search }}{% endif %}" class="sort-link">التصنيف{% if sort == 'category' %} <i class="fas fa-sort-{% if dir == 'desc' %}down{% else %}up{% endif %}"></i>{% endif %}</a></th>
+            <th><a href="?sort=price&amp;dir={% if sort == 'price' and dir == 'asc' %}desc{% else %}asc{% endif %}{% if search %}&amp;search={{ search }}{% endif %}" class="sort-link">السعر{% if sort == 'price' %} <i class="fas fa-sort-{% if dir == 'desc' %}down{% else %}up{% endif %}"></i>{% endif %}</a></th>
+            <th><a href="?sort=quantity&amp;dir={% if sort == 'quantity' and dir == 'asc' %}desc{% else %}asc{% endif %}{% if search %}&amp;search={{ search }}{% endif %}" class="sort-link">الكمية{% if sort == 'quantity' %} <i class="fas fa-sort-{% if dir == 'desc' %}down{% else %}up{% endif %}"></i>{% endif %}</a></th>
+            <th><a href="?sort=created_at&amp;dir={% if sort == 'created_at' and dir == 'asc' %}desc{% else %}asc{% endif %}{% if search %}&amp;search={{ search }}{% endif %}" class="sort-link">تاريخ الإضافة{% if sort == 'created_at' %} <i class="fas fa-sort-{% if dir == 'desc' %}down{% else %}up{% endif %}"></i>{% endif %}</a></th>
             <th>الإجراءات</th>
           </tr>
         </thead>
@@ -113,15 +113,15 @@
     <nav>
       <ul class="pagination justify-content-center mb-0">
         {% if page_obj.has_previous %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">السابق</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if sort %}&sort={{ sort }}&dir={{ dir }}{% endif %}">السابق</a></li>
         {% endif %}
         {% for num in page_obj.paginator.page_range %}
         <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-          <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}">{{ num }}</a>
+          <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if sort %}&sort={{ sort }}&dir={{ dir }}{% endif %}">{{ num }}</a>
         </li>
         {% endfor %}
         {% if page_obj.has_next %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}">التالي</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if sort %}&sort={{ sort }}&dir={{ dir }}{% endif %}">التالي</a></li>
         {% endif %}
       </ul>
     </nav>
